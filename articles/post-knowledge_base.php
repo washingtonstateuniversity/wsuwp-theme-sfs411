@@ -85,6 +85,8 @@ $post_share_placement = spine_get_option( 'post_social_placement' );
 		</div>
 	<?php endif; ?>
 
+	<?php comments_template(); ?>
+
 	<footer class="article-footer">
 
 		<?php
