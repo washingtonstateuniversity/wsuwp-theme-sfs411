@@ -24,7 +24,7 @@ $post_share_placement = spine_get_option( 'post_social_placement' );
 		<?php endif; ?>
 		</hgroup>
 		<hgroup class="source">
-			<time class="article-date" datetime="<?php echo get_the_date( 'c' ); ?>"><?php echo get_the_date(); ?></time>
+			Last updated <time class="article-date" datetime="<?php echo esc_attr( get_the_modified_date( 'c' ) ); ?>"><?php echo esc_html( get_the_modified_date() ); ?></time>
 			<cite class="article-author">
 				<?php
 				if ( '1' === spine_get_option( 'show_author_page' ) ) {
