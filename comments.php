@@ -60,7 +60,6 @@ if ( $comments ) {
 				array(
 					'avatar_size' => 0,
 					'style'       => 'div',
-					'format'      => 'html5',
 					'page'        => get_the_ID(),
 				)
 			);
@@ -101,11 +100,7 @@ if ( $comments ) {
 
 if ( comments_open() ) {
 
-	comment_form(
-		array(
-			'format' => 'html5',
-		)
-	);
+	comment_form();
 
 } elseif ( is_single() ) {
 
