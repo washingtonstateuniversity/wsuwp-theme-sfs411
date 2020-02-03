@@ -10,6 +10,7 @@ namespace SFS411\Comment\Form;
 add_action( 'after_setup_theme', __NAMESPACE__ . '\register_html5_support' );
 add_filter( 'comment_form_fields', __NAMESPACE__ . '\filter_comment_form_fields', 10 );
 add_filter( 'preprocess_comment', __NAMESPACE__ . '\preprocess_comment_data', 10 );
+
 /**
  * Registers HTML5 support for the comment form and comments output.
  */

@@ -11,6 +11,9 @@ add_action( 'admin_menu', __NAMESPACE__ . '\add_flagged_posts_page' );
 add_filter( 'parent_file', __NAMESPACE__ . '\flagged_posts_parent_file' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\flagged_posts_submenu_file' );
 add_action( 'adminmenu', __NAMESPACE__ . '\adminmenu' );
+add_filter( 'comment_row_actions', __NAMESPACE__ . '\comment_row_actions', 10, 2 );
+add_action( 'admin_footer', __NAMESPACE__ . '\admin_footer' );
+add_filter( 'preprocess_comment', __NAMESPACE__ . '\preprocess_comment_data' );
 
 /**
  * Adds the Flagged Posts page the the Knowledge Base menu.
@@ -92,4 +95,85 @@ function adminmenu() {
 		commentsMenuItem();
 	</script>
 	<?php
+}
+
+/**
+ * Removes the `unapprove` and `approve` row actions and repurposes `reply`
+ * into a `resolve` action.
+ *
+ * @param array      $actions Array of comment actions.
+ * @param WP_Comment $comment The comment object.
+ */
+function comment_row_actions( $actions, $comment ) {
+	if ( ! is_flagged_posts_page() ) {
+		return;
+	}
+
+	if ( 'flagged_content' !== $comment->comment_type ) {
+		return;
+	}
+
+	unset( $actions['unapprove'] );
+	unset( $actions['approve'] );
+
+	$actions['reply'] = sprintf(
+		'<button type="button" onclick="window.commentReply && commentReply.open(\'%s\',\'%s\');" class="vim-r button-link hide-if-no-js" aria-label="%s">%s</button>',
+		$comment->comment_ID,
+		$comment->comment_post_ID,
+		esc_attr__( 'Resolve this flagged content' ),
+		__( 'Resolve' )
+	);
+
+	return $actions;
+}
+
+/**
+ * Add a checkbox to the comment list table reply form for resolving flags.
+ */
+function admin_footer() {
+	if ( ! is_flagged_posts_page() ) {
+		return;
+	}
+	?>
+	<script type="text/javascript">
+		function addResolveCheckbox() {
+			const checkbox = document.createElement( 'input' );
+			const label = document.createElement( 'label' );
+			const replyContainer = document.getElementById( 'replycontainer' );
+
+			checkbox.type    = 'checkbox';
+			checkbox.name    = 'resolve_flag';
+			checkbox.id      = 'resolve-flag';
+			checkbox.checked = true;
+
+			label.htmlFor = 'resolve-flag';
+			label.appendChild( document.createTextNode( 'This resolves the concern' ) );
+
+			replyContainer.appendChild( checkbox );
+			replyContainer.appendChild( label );
+		};
+
+		addResolveCheckbox();
+	</script>
+	<?php
+}
+
+/**
+ * If the comment is about bad content, save it as a `flagged_content` type.
+ *
+ * @param array $commentdata Submitted comment data.
+ * @return array $commentdata Modified comment data.
+ */
+function preprocess_comment_data( $commentdata ) {
+
+	// Nonce verification is not necessary for the comment form.
+	if ( is_user_logged_in() && isset( $_POST['resolve_flag'] ) && isset( $commentdata['comment_parent'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+
+		wp_update_comment( array(
+			'comment_ID'   => $commentdata['comment_parent'],
+			'comment_type' => 'resolved',
+		) );
+	}
+
+	return $commentdata;
 }
