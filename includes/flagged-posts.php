@@ -110,12 +110,12 @@ function comment_row_actions( $actions, $comment ) {
 
 	// Return early if this is not the Flagged Posts page.
 	if ( ! is_flagged_posts_page() ) {
-		return;
+		return $actions;
 	}
 
 	// Return early if the comment is not of the `flagged_content` type.
 	if ( 'flagged_content' !== $comment->comment_type ) {
-		return;
+		return $actions;
 	}
 
 	// Unset `unapprove` and`approve` actions, not applicable in this case.
