@@ -78,6 +78,8 @@ function flagged_posts_submenu_file( $submenu_file ) {
  * presumably.
  */
 function adminmenu() {
+
+	// Return early if this is not the Flagged Posts page.
 	if ( ! is_flagged_posts_page() ) {
 		return;
 	}
@@ -99,23 +101,28 @@ function adminmenu() {
 
 /**
  * Removes the `unapprove` and `approve` row actions and repurposes `reply`
- * into a `resolve` action.
+ * for use as part of the resolution workflow.
  *
  * @param array      $actions Array of comment actions.
  * @param WP_Comment $comment The comment object.
  */
 function comment_row_actions( $actions, $comment ) {
+
+	// Return early if this is not the Flagged Posts page.
 	if ( ! is_flagged_posts_page() ) {
 		return;
 	}
 
+	// Return early if the comment is not of the `flagged_content` type.
 	if ( 'flagged_content' !== $comment->comment_type ) {
 		return;
 	}
 
+	// Unset `unapprove` and`approve` actions, not applicable in this case.
 	unset( $actions['unapprove'] );
 	unset( $actions['approve'] );
 
+	// Modify the default `reply` action to use as a "Resolve" button.
 	$actions['reply'] = sprintf(
 		'<button type="button" onclick="window.commentReply && commentReply.open(\'%s\',\'%s\');" class="vim-r button-link hide-if-no-js" aria-label="%s">%s</button>',
 		$comment->comment_ID,
@@ -131,6 +138,8 @@ function comment_row_actions( $actions, $comment ) {
  * Add a checkbox to the comment list table reply form for resolving flags.
  */
 function admin_footer() {
+
+	// Return early if this is not the Flagged Posts page.
 	if ( ! is_flagged_posts_page() ) {
 		return;
 	}
@@ -168,7 +177,6 @@ function preprocess_comment_data( $commentdata ) {
 
 	// Nonce verification is not necessary for the comment form.
 	if ( is_user_logged_in() && isset( $_POST['resolve_flag'] ) && isset( $commentdata['comment_parent'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
-
 		wp_update_comment( array(
 			'comment_ID'   => $commentdata['comment_parent'],
 			'comment_type' => 'resolved',
