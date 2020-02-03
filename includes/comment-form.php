@@ -10,6 +10,7 @@ namespace SFS411\Comment\Form;
 add_action( 'after_setup_theme', __NAMESPACE__ . '\register_html5_support' );
 add_filter( 'comment_form_fields', __NAMESPACE__ . '\filter_comment_form_fields', 10 );
 add_filter( 'preprocess_comment', __NAMESPACE__ . '\preprocess_comment_data', 10 );
+add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\enqueue_comment_reply_script' );
 
 /**
  * Registers HTML5 support for the comment form and comments output.
@@ -51,4 +52,13 @@ function preprocess_comment_data( $commentdata ) {
 	}
 
 	return $commentdata;
+}
+
+/**
+ * Enqueues the comment reply script if appropriate.
+ */
+function enqueue_comment_reply_script() {
+	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
+		wp_enqueue_script( 'comment-reply' );
+	}
 }
