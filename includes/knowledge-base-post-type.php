@@ -19,6 +19,7 @@ function register_post_type() {
 		'labels'                 => array(
 			'name'               => _x( 'Knowledge Base', 'Post Type General Name', 'sfs411' ),
 			'singular_name'      => _x( 'Knowledge Base', 'Post Type Singular Name', 'pfmc-feature-set' ),
+			'all_items'          => __( 'All Posts', 'sfs411' ),
 		),
 		'description'           => '',
 		'public'                => true,

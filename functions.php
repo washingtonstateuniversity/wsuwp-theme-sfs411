@@ -9,3 +9,4 @@
 
 require_once 'includes/knowledge-base-post-type.php';
 require_once 'includes/comment-form.php';
+require_once 'includes/flagged-posts.php';
