@@ -14,6 +14,7 @@ add_action( 'adminmenu', __NAMESPACE__ . '\adminmenu' );
 add_filter( 'comment_row_actions', __NAMESPACE__ . '\comment_row_actions', 10, 2 );
 add_action( 'admin_footer', __NAMESPACE__ . '\admin_footer' );
 add_filter( 'preprocess_comment', __NAMESPACE__ . '\preprocess_comment_data' );
+add_action( 'pre_get_comments', __NAMESPACE__ . '\filter_comments_query' );
 
 /**
  * Adds the Flagged Posts page the the Knowledge Base menu.
@@ -24,7 +25,7 @@ function add_flagged_posts_page() {
 		'Flagged Posts',
 		'Flagged Posts',
 		'manage_options',
-		'edit-comments.php?comment_type=flagged_content&post_type=knowledge_base',
+		'edit-comments.php?comment_type=flagged_content',
 		'',
 		1
 	);
@@ -63,7 +64,7 @@ function flagged_posts_parent_file( $parent_file ) {
  */
 function flagged_posts_submenu_file( $submenu_file ) {
 	if ( is_flagged_posts_page() ) {
-		$submenu_file = 'edit-comments.php?comment_type=flagged_content&post_type=knowledge_base';
+		$submenu_file = 'edit-comments.php?comment_type=flagged_content';
 	}
 
 	return $submenu_file;
@@ -184,4 +185,28 @@ function preprocess_comment_data( $commentdata ) {
 	}
 
 	return $commentdata;
+}
+
+/**
+ * Filters the comments query.
+ *
+ * For the Flagged Posts dashboard page, this ensures that the only comments
+ * shown are those for `knowledge_base` posts. (And the `comment_type` URL
+ * parameter ensures only comments of the `flagged_content` type are shown.)
+ *
+ * For the default Comments dashboard page, this ensures that the only comments
+ * show are NOT of the `flagged_content` or `resolved` type.
+ *
+ * @param WP_Comment_Query The WP_Comment_Query instance.
+ */
+function filter_comments_query( $query ) {
+	if ( ! is_admin() || ! get_current_screen() || 'edit-comments' !== get_current_screen()->base ) {
+		return;
+	}
+
+	if ( is_flagged_posts_page() ) {
+		$query->query_vars['post_type'] = 'knowledge_base';
+	} else {
+		$query->query_vars['type__not_in'] = array( 'flagged_content', 'resolved' );
+	}
 }
