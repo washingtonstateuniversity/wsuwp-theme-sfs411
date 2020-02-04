@@ -67,8 +67,9 @@ function add_meta_boxes() {
  */
 function get_stale_in_fields() {
 	return array(
-		'half-year' => '6 months',
-		'year'      => '1 year',
+		'quarterly'  => '3 months',
+		'biannually' => '6 months',
+		'annually'   => '1 year',
 	);
 }
 
