@@ -17,6 +17,7 @@ add_filter( 'preprocess_comment', __NAMESPACE__ . '\preprocess_comment_data' );
 add_action( 'pre_get_comments', __NAMESPACE__ . '\filter_comments_query' );
 add_filter( 'wp_count_comments', __NAMESPACE__ . '\filter_comment_counts', 10, 2 );
 add_filter( 'comment_status_links', __NAMESPACE__ . '\flagged_posts_status_links' );
+add_filter( 'bulk_actions-edit-comments', __NAMESPACE__ . '\filter_bulk_actions' );
 
 /**
  * Adds the Flagged Posts page the the Knowledge Base menu.
@@ -313,4 +314,25 @@ function flagged_posts_status_links( $status_links ) {
 	);
 
 	return $status_links;
+}
+
+/**
+ * Filters the bulk actions available on the Flagged Posts page.
+ *
+ * @param array $actions Array of default bulk actions.
+ * @return array Modified array of bulk actions.
+ */
+function filter_bulk_actions( $actions ) {
+
+	// Return early if this is not the Flagged Posts page.
+	if ( ! is_flagged_posts_page() ) {
+		return $actions;
+	}
+
+	// Remove the `unapprove`, `approve`, and `spam` bulk actions.
+	unset( $actions['unapprove'] );
+	unset( $actions['approve'] );
+	unset( $actions['spam'] );
+
+	return $actions;
 }
