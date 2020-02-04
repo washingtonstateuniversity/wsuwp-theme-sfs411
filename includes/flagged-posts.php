@@ -121,9 +121,10 @@ function comment_row_actions( $actions, $comment ) {
 		return $actions;
 	}
 
-	// Unset `unapprove` and`approve` actions, not applicable in this case.
+	// Unset `unapprove`, `approve`, and `spam` actions.
 	unset( $actions['unapprove'] );
 	unset( $actions['approve'] );
+	unset( $actions['spam'] );
 
 	// Modify the default `reply` action to use as a "Resolve" button.
 	$actions['reply'] = sprintf(
@@ -264,7 +265,7 @@ function filter_comment_counts( $count, $post_id ) {
 /**
  * Modifies the status links for the Flagged Posts page.
  *
- * This removes the "Pending" and "Approved" links,
+ * This removes the "Pending", "Approved", and "Spam" links,
  * and fixes the count for the "Mine" link, since that doesn't
  * seem possible to do through the `wp_count_comments` filter.
  *
@@ -280,6 +281,7 @@ function flagged_posts_status_links( $status_links ) {
 
 	unset( $status_links['moderated'] );
 	unset( $status_links['approved'] );
+	unset( $status_links['spam'] );
 
 	$comments_query = new \WP_Comment_Query();
 
