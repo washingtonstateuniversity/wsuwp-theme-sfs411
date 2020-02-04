@@ -11,6 +11,7 @@ add_action( 'admin_menu', __NAMESPACE__ . '\add_stale_posts_page' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\stale_posts_submenu_file' );
 add_action( 'add_meta_boxes_knowledge_base', __NAMESPACE__ . '\\add_meta_boxes' );
 add_action( 'save_post_knowledge_base', __NAMESPACE__ . '\\save_post', 10, 2 );
+add_filter( 'pre_get_posts', __NAMESPACE__ . '\filter_by_stale_posts' );
 
 /**
  * Adds the Stale Posts page the the Knowledge Base menu.
@@ -144,4 +145,31 @@ function save_post( $post_id, $post ) {
 		update_post_meta( $post_id, '_sfs411_stale_by', $stale_by );
 		update_post_meta( $post_id, '_sfs411_stale_in', $_POST['_sfs411_stale_in'] );
 	}
+}
+
+/**
+ * Adjusts the query for filtered views of the Knowledge Base post list table.
+ *
+ * @param WP_Query $query The WP_Query instance.
+ */
+function filter_by_stale_posts( $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() || 'edit-knowledge_base' !== get_current_screen()->id ) {
+		return;
+	}
+
+	if ( ! isset( $_GET['stale'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+		return;
+	}
+
+	$query->set(
+		'meta_query',
+		array(
+			array(
+				'key'     => '_sfs411_stale_by',
+				'value'   => date( 'Y-m-d' ),
+				'compare' => '<=',
+				'type'    => 'DATE',
+			),
+		)
+	);
 }
