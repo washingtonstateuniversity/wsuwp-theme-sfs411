@@ -166,7 +166,14 @@ function admin_footer() {
 			replyContainer.appendChild( label );
 		};
 
+		function removeFilterActions() {
+			const filterActions = document.getElementById( 'filter-by-comment-type' ).parentNode;
+
+			filterActions.parentNode.removeChild( filterActions );
+		}
+
 		addResolveCheckbox();
+		removeFilterActions();
 	</script>
 	<?php
 }
