@@ -15,6 +15,8 @@ add_filter( 'comment_row_actions', __NAMESPACE__ . '\comment_row_actions', 10, 2
 add_action( 'admin_footer', __NAMESPACE__ . '\admin_footer' );
 add_filter( 'preprocess_comment', __NAMESPACE__ . '\preprocess_comment_data' );
 add_action( 'pre_get_comments', __NAMESPACE__ . '\filter_comments_query' );
+add_filter( 'wp_count_comments', __NAMESPACE__ . '\filter_comment_counts', 10, 2 );
+add_filter( 'comment_status_links', __NAMESPACE__ . '\flagged_posts_status_links' );
 
 /**
  * Adds the Flagged Posts page the the Knowledge Base menu.
@@ -209,4 +211,97 @@ function filter_comments_query( $query ) {
 	} else {
 		$query->query_vars['type__not_in'] = array( 'flagged_content', 'resolved' );
 	}
+}
+
+/**
+ * Filters the comment counts for the status links on the Flagged Posts page.
+ *
+ * @param array|stdClass $count   An empty array or an object containing comment counts.
+ * @param int            $post_id The post ID.
+ * @return stdClass Object containing comment counts.
+ */
+function filter_comment_counts( $count, $post_id ) {
+
+	// Return early if this is not the Flagged Posts page.
+	if ( ! is_flagged_posts_page() ) {
+		return;
+	}
+
+	// Return early if the current view is for a specific post.
+	if ( 0 !== $post_id ) {
+		return $count;
+	}
+
+	$comments_query = new \WP_Comment_Query();
+
+	// Find `flagged_content` comment types on `knowledge_base` posts.
+	$args = array(
+		'type'      => 'flagged_content',
+		'post_type' => 'knowledge_base',
+		'count'     => true,
+	);
+
+	// Add the argument for trashed comments.
+	$trashed_comments_args = array_merge(
+		$args,
+		array(
+			'status' => 'trash',
+		),
+	);
+
+	// Provide accurate counts for `flagged_content` comment types.
+	$count = (object) array(
+		'all'            => get_comments( $args ),
+		'moderated'      => 0,
+		'approved'       => 0,
+		'post-trashed'   => 0,
+		'trash'          => get_comments( $trashed_comments_args ),
+	);
+
+	return $count;
+}
+
+/**
+ * Modifies the status links for the Flagged Posts page.
+ *
+ * This removes the "Pending" and "Approved" links,
+ * and fixes the count for the "Mine" link, since that doesn't
+ * seem possible to do through the `wp_count_comments` filter.
+ *
+ * @param array $status_links Fully-formed comment status links.
+ * @return array Modified comment status links.
+ */
+function flagged_posts_status_links( $status_links ) {
+
+	// Return early if this is not the Flagged Posts page.
+	if ( ! is_flagged_posts_page() ) {
+		return $status_links;
+	}
+
+	unset( $status_links['moderated'] );
+	unset( $status_links['approved'] );
+
+	$comments_query = new \WP_Comment_Query();
+
+	$args = array(
+		'count'     => true,
+		'user_id'   => get_current_user_id(),
+	);
+
+	$mine_args = array_merge(
+		$args,
+		array(
+			'type'      => 'flagged_content',
+			'post_type' => 'knowledge_base',
+		)
+	);
+
+	// Replace the inaccurate count for the "Mine" link.
+	$status_links['mine'] = str_replace(
+		get_comments( $args ),
+		get_comments( $mine_args ),
+		$status_links['mine']
+	);
+
+	return $status_links;
 }
