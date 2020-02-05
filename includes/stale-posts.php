@@ -10,7 +10,7 @@ namespace SFS411\Dashboard\Stale_Content;
 add_action( 'admin_menu', __NAMESPACE__ . '\add_stale_posts_page' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\stale_posts_submenu_file' );
 add_action( 'add_meta_boxes_knowledge_base', __NAMESPACE__ . '\add_meta_boxes' );
-add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\enqueue_meta_box_script' );
+add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\enqueue_meta_box_assets' );
 add_action( 'save_post_knowledge_base', __NAMESPACE__ . '\save_post', 10, 2 );
 add_filter( 'pre_get_posts', __NAMESPACE__ . '\filter_by_stale_posts' );
 
@@ -147,16 +147,25 @@ function display_staleness_management_meta_box( $post ) {
  *
  * @param string $hook_suffix The current admin page
  */
-function enqueue_meta_box_script( $hook_suffix ) {
-	if ( 'post.php' === $hook_suffix && 'knowledge_base' === get_current_screen()->id ) {
-		wp_enqueue_script(
-			'sfs411-stale-content',
-			get_stylesheet_directory_uri() . '/includes/js/stale-content-meta-box.js',
-			array(),
-			spine_get_child_version(),
-			true
-		);
+function enqueue_meta_box_assets( $hook_suffix ) {
+	if ( 'post.php' !== $hook_suffix || 'knowledge_base' !== get_current_screen()->id ) {
+		return;
 	}
+
+	wp_enqueue_script(
+		'sfs411-stale-content',
+		get_stylesheet_directory_uri() . '/includes/js/stale-content-meta-box.js',
+		array(),
+		spine_get_child_version(),
+		true
+	);
+
+	wp_enqueue_style(
+		'sfs411-stale-content',
+		get_stylesheet_directory_uri() . '/includes/css/stale-content-meta-box.css',
+		array(),
+		spine_get_child_version()
+	);
 }
 
 /**
