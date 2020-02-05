@@ -84,20 +84,22 @@ function get_stale_in_fields() {
 function display_staleness_management_meta_box( $post ) {
 	$stale_in = get_post_meta( $post->ID, '_sfs411_stale_in', true );
 	$stale_by = get_post_meta( $post->ID, '_sfs411_stale_by', true );
+	$flagged  = $stale_in && $stale_by;
 
 	wp_nonce_field( 'sfs411_check_staleness_nonce', 'sfs411-staleness-nonce' );
 
-	$flagged = $stale_in && $stale_by;
-
 	if ( $flagged ) :
+		$message = ( date( 'Y-m-d' ) > $stale_by )
+			? 'This post has been marked as stale since '
+			: 'This post is set to be marked as stale on ';
 		?>
-		<p id="sfs411-staleness-settings_message">This post is set to be marked as stale on <?php echo esc_html( date( 'F j, Y', strtotime( $stale_by ) ) ); ?>.</p>
+		<p id="sfs411-staleness-management_message"><?php echo esc_html( $message . date( 'F j, Y', strtotime( $stale_by ) ) ); ?>.</p>
 		<?php
 	endif;
 	?>
 
 	<div
-		id="sfs411-staleness-settings_duration-options"
+		id="sfs411-staleness-management_options"
 		<?php if ( $flagged ) : ?>class="hidden"<?php endif; ?>
 	>
 
@@ -107,23 +109,35 @@ function display_staleness_management_meta_box( $post ) {
 		<p>
 			<input
 				type="radio"
-				id="<?php echo esc_attr( $id ); ?>"
+				id="sfs411-staleness-management_options-<?php echo esc_attr( $id ); ?>"
 				name="_sfs411_stale_in"
 				value="<?php echo esc_attr( $value ); ?>"
 				<?php
 				checked( $stale_in, $value );
 				disabled( $flagged );
 				?>
-
 			>
-			<label for="<?php echo esc_attr( $id ); ?>">in <?php echo esc_html( $value ); ?></label>
+			<label for="sfs411-staleness-management_options-<?php echo esc_attr( $id ); ?>">in <?php echo esc_html( $value ); ?></label>
 		</p>
 		<?php endforeach; ?>
 
+		<?php if ( empty( get_current_screen()->action ) ) : ?>
+			<p><label for="sfs411-staleness-management_options-note">Leave a brief note explaining why this post is no longer stale (optional):</label></p>
+			<textarea
+				id="sfs411-staleness-management_options-note"
+				name="_sfs411_reset_note"
+				<?php disabled( $flagged ); ?>
+			></textarea>
+		<?php endif; ?>
+
 	</div>
 
-	<?php if ( $flagged ) : ?>
-		<button id="sfs411-staleness-settings_reset" class="components-button is-link">Reset</button>
+	<?php
+	if ( $flagged ) :
+		?>
+
+		<button id="sfs411-staleness-management_reset" class="components-button is-link">Reset</button>
+
 		<?php
 	endif;
 }
