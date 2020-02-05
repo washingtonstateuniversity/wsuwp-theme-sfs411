@@ -184,15 +184,37 @@ function save_post( $post_id, $post ) {
 		return;
 	}
 
-	if ( isset( $_POST['_sfs411_stale_in'] ) && in_array( $_POST['_sfs411_stale_in'], array_values( get_stale_in_fields() ), true ) ) {
-
-		// Get the current date and modify it by the `_sfs411_stale_in` value.
-		$date = new \DateTime();
-		$stale_by = $date->modify( '+' . $_POST['_sfs411_stale_in'] )->format( 'Y-m-d' );
-
-		update_post_meta( $post_id, '_sfs411_stale_by', $stale_by );
-		update_post_meta( $post_id, '_sfs411_stale_in', $_POST['_sfs411_stale_in'] );
+	if ( ! isset( $_POST['_sfs411_stale_in'] ) || ! in_array( $_POST['_sfs411_stale_in'], array_values( get_stale_in_fields() ), true ) ) {
+		return;
 	}
+
+	update_post_meta( $post_id, '_sfs411_stale_in', $_POST['_sfs411_stale_in'] );
+
+	// Get the current date and modify it by the `_sfs411_stale_in` value.
+	$date = new \DateTime();
+	$stale_by = $date->modify( '+' . $_POST['_sfs411_stale_in'] )->format( 'Y-m-d' );
+
+	update_post_meta( $post_id, '_sfs411_stale_by', $stale_by );
+
+	// Get existing reset log meta.
+	$reset_log = get_post_meta( $post_id, '_sfs411_reset_log', true );
+	$reset_log = ( $reset_log ) ? $reset_log : array();
+
+	// Set up user and date of the current reset.
+	$this_reset = array(
+		'user' => wp_get_current_user()->user_login,
+		'date' => date( 'm-d-Y' ),
+	);
+
+	// Add the note for the current reset if there is one.
+	if ( isset( $_POST['_sfs411_reset_note'] ) ) {
+		$this_reset['note'] = sanitize_text_field( $_POST['_sfs411_reset_note'] );
+	}
+
+	// Append the current reset to the log.
+	$reset_log[] = $this_reset;
+
+	update_post_meta( $post_id, '_sfs411_reset_log', $reset_log );
 }
 
 /**
