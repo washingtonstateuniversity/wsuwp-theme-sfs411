@@ -9,8 +9,9 @@ namespace SFS411\Dashboard\Stale_Content;
 
 add_action( 'admin_menu', __NAMESPACE__ . '\add_stale_posts_page' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\stale_posts_submenu_file' );
-add_action( 'add_meta_boxes_knowledge_base', __NAMESPACE__ . '\\add_meta_boxes' );
-add_action( 'save_post_knowledge_base', __NAMESPACE__ . '\\save_post', 10, 2 );
+add_action( 'add_meta_boxes_knowledge_base', __NAMESPACE__ . '\add_meta_boxes' );
+add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\enqueue_meta_box_script' );
+add_action( 'save_post_knowledge_base', __NAMESPACE__ . '\save_post', 10, 2 );
 add_filter( 'pre_get_posts', __NAMESPACE__ . '\filter_by_stale_posts' );
 
 /**
@@ -86,30 +87,62 @@ function display_staleness_management_meta_box( $post ) {
 
 	wp_nonce_field( 'sfs411_check_staleness_nonce', 'sfs411-staleness-nonce' );
 
-	if ( $stale_in && $stale_by ) :
+	$flagged = $stale_in && $stale_by;
+
+	if ( $flagged ) :
 		?>
-			<p>This post is set to be marked as stale on <?php echo esc_html( date( 'F j, Y', strtotime( $stale_by ) ) ); ?>.
+		<p id="sfs411-staleness-settings_message">This post is set to be marked as stale on <?php echo esc_html( date( 'F j, Y', strtotime( $stale_by ) ) ); ?>.</p>
 		<?php
 	endif;
-
 	?>
 
-	<p>Mark this post as stale:</p>
+	<div
+		id="sfs411-staleness-settings_duration-options"
+		<?php if ( $flagged ) : ?>class="hidden"<?php endif; ?>
+	>
 
-	<?php foreach ( get_stale_in_fields() as $id => $value ) : ?>
-	<p>
-		<input
-			type="radio"
-			id="<?php echo esc_attr( $id ); ?>"
-			name="_sfs411_stale_in"
-			value="<?php echo esc_attr( $value ); ?>"
-			<?php checked( $stale_in, $value ); ?>
-		>
-		<label for="half-year">in <?php echo esc_html( $value ); ?></label>
-	</p>
-	<?php endforeach; ?>
+		<p>Mark this post as stale:</p>
 
-	<?php
+		<?php foreach ( get_stale_in_fields() as $id => $value ) : ?>
+		<p>
+			<input
+				type="radio"
+				id="<?php echo esc_attr( $id ); ?>"
+				name="_sfs411_stale_in"
+				value="<?php echo esc_attr( $value ); ?>"
+				<?php
+				checked( $stale_in, $value );
+				disabled( $flagged );
+				?>
+
+			>
+			<label for="<?php echo esc_attr( $id ); ?>">in <?php echo esc_html( $value ); ?></label>
+		</p>
+		<?php endforeach; ?>
+
+	</div>
+
+	<?php if ( $flagged ) : ?>
+		<button id="sfs411-staleness-settings_reset" class="components-button is-link">Reset</button>
+		<?php
+	endif;
+}
+
+/**
+ * Enqueue JavaScript for stale post management metabox functionality.
+ *
+ * @param string $hook_suffix The current admin page
+ */
+function enqueue_meta_box_script( $hook_suffix ) {
+	if ( 'post.php' === $hook_suffix && 'knowledge_base' === get_current_screen()->id ) {
+		wp_enqueue_script(
+			'sfs411-stale-content',
+			get_stylesheet_directory_uri() . '/includes/js/stale-content-meta-box.js',
+			array(),
+			spine_get_child_version(),
+			true
+		);
+	}
 }
 
 /**
