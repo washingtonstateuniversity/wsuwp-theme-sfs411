@@ -73,8 +73,6 @@ function get_stale_in_fields() {
 /**
  * Displays a meta box used to manage post staleness.
  *
- * @since 0.3.0
- *
  * @param \WP_Post $post
  */
 function display_staleness_management_meta_box( $post ) {
@@ -166,8 +164,6 @@ function enqueue_meta_box_assets( $hook_suffix ) {
 
 /**
  * Saves the meta for tracking the staleness of a post.
- *
- * @since 0.3.0
  *
  * @param int      $post_id
  * @param \WP_Post $post
