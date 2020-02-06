@@ -45,10 +45,6 @@ function stale_posts_submenu_file( $submenu_file ) {
 
 /**
  * Adds a meta box for managing post staleness.
- *
- * @since 0.3.0
- *
- * @param string $post_type
  */
 function add_meta_boxes() {
 	add_meta_box(
