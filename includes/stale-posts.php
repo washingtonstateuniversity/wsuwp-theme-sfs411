@@ -16,6 +16,8 @@ add_action( 'add_meta_boxes_knowledge_base', __NAMESPACE__ . '\add_meta_boxes' )
 add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\enqueue_meta_box_assets' );
 add_action( 'save_post_knowledge_base', __NAMESPACE__ . '\save_post', 10, 2 );
 add_filter( 'pre_get_posts', __NAMESPACE__ . '\filter_by_stale_posts' );
+add_action( 'init', __NAMESPACE__ . '\schedule_email' );
+add_action( 'sfs411_send_stale_post_email', __NAMESPACE__ . '\send_email' );
 
 /**
  * Adds the Stale Posts page the the Knowledge Base menu.
@@ -349,4 +351,62 @@ function filter_by_stale_posts( $query ) {
 			'type'    => 'DATE',
 		),
 	) );
+}
+
+/**
+ * Schedules a recurring task for sending notifications about stale posts.
+ */
+function schedule_email() {
+	if ( ! wp_next_scheduled( 'sfs411_send_stale_post_email' ) ) {
+		wp_schedule_event( strtotime( 'tomorrow' ), 'daily', 'sfs411_send_stale_post_email' );
+	}
+}
+
+/**
+ * Sends an email to the author of any post that is stale.
+ */
+function send_email() {
+
+	// Query for any stale posts.
+	// The default `compare` parameter value of `=` should
+	// ensure that only one email is sent per stale post.
+	$stale_post_query = new \WP_Query( array(
+		'post_type'      => 'knowledge_base',
+		'posts_per_page' => -1,
+		'meta_query' => array(
+			array(
+				'key'     => '_sfs411_stale_by',
+				'value'   => date( 'Y-m-d' ),
+				'type'    => 'DATE',
+			),
+		),
+	) );
+
+	if ( $stale_post_query->have_posts() ) {
+		while ( $stale_post_query->have_posts() ) {
+			$stale_post_query->the_post();
+
+			$to = get_the_author_meta( 'user_email' );
+
+			$subject = 'Your SFS 411 Knowledge Base post requires a review';
+
+			$edit_post = esc_url( get_edit_post_link( get_the_ID() ) );
+			$dashboard = esc_url( add_query_arg( array(
+				'post_type' => 'knowledge_base',
+				'stale'     => true,
+				'author'    => get_current_user_id(),
+			), get_admin_url( 'edit.php' ) ) );
+
+			$body  = '<p>The Knowledge Base post "' . get_the_title() . '" has been scheduled for review.</p>';
+			$body .= '<p>Please make any necessary changes at <a href="' . $edit_post . '">' . $edit_post . '</a>, then use the "Reset" button in the "Staleness Management" box to schedule the next time the post should be reviewed.<p>';
+			$body .= '<p>View all your stale posts at <a href="' . $dashboard . '">' . $dashboard . '</a>.<p>';
+
+			$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+
+			wp_mail( $to, $subject, $body, $headers );
+		}
+	}
+
+	wp_reset_postdata();
+
 }
