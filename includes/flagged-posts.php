@@ -18,6 +18,9 @@ add_action( 'pre_get_comments', __NAMESPACE__ . '\filter_comments_query' );
 add_filter( 'wp_count_comments', __NAMESPACE__ . '\filter_comment_counts', 10, 2 );
 add_filter( 'comment_status_links', __NAMESPACE__ . '\flagged_posts_status_links' );
 add_filter( 'bulk_actions-edit-comments', __NAMESPACE__ . '\filter_bulk_actions' );
+add_filter( 'notify_post_author', __NAMESPACE__ . '\disable_default_notification', 10, 2 );
+add_filter( 'notify_moderator', __NAMESPACE__ . '\disable_default_notification', 10, 2 );
+add_action( 'comment_post', __NAMESPACE__ . '\comment_post', 10, 3 );
 
 /**
  * Adds the Flagged Posts page the the Knowledge Base menu.
@@ -217,6 +220,10 @@ function filter_comments_query( $query ) {
 
 	if ( is_flagged_posts_page() ) {
 		$query->query_vars['post_type'] = 'knowledge_base';
+
+		if ( isset( $_GET['id'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+			$query->query_vars['comment__in'] = array( absint( $_GET['id'] ) ); // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+		}
 	} else {
 		$query->query_vars['type__not_in'] = array( 'flagged_content', 'resolved' );
 	}
@@ -335,4 +342,61 @@ function filter_bulk_actions( $actions ) {
 	unset( $actions['spam'] );
 
 	return $actions;
+}
+
+/**
+ * Disable default comment notifications for comments flagging bad content
+ * or resolving bad content flags.
+ *
+ * @param bool $maybe_notify Whether to notify blog moderator/post author.
+ * @param int  $comment_id   The ID of the comment for the notification.
+ */
+function disable_default_notification( $maybe_notify, $comment_id ) {
+	$comment_type = get_comment( $comment_id )->comment_type;
+
+	if ( in_array( $comment_type, array( 'flagged_content', 'resolved' ), true ) ) {
+		$maybe_notify = false;
+	}
+
+	return $maybe_notify;
+}
+
+/**
+ * Send an email when a comment flagging bad content is submitted.
+ *
+ * @param int        $comment_id       The comment ID.
+ * @param int|string $comment_approved 1 if the comment is approved, 0 if not, 'spam' if spam.
+ * @param array      $comment_data     Comment data.
+ */
+function comment_post( $comment_id, $comment_approved, $comment_data ) {
+
+	// Return early if the comment is not of the `flagged-content` type.
+	if ( 'flagged_content' !== $comment_data->comment_type ) {
+		return;
+	}
+
+	// Return early if the comment is not approved.
+	if ( 1 !== $comment_approved ) {
+		return;
+	}
+
+	$post = get_post( $comment_data->comment_post_ID );
+
+	$author_id = $post->post_author;
+
+	$to = get_the_author_meta( 'user_email', $author_id );
+
+	$subject = 'Your SFS 411 Knowledge Base post was flagged for content';
+
+	$dashboard_url   = add_query_arg( 'comment_type', 'flagged_content', get_admin_url( 'edit-comments.php' ) );
+	$flag_dashboard  = esc_url( add_query_arg( 'id', absint( $comment_id ), $dashboard_url ) );
+	$post_flags_dash = esc_url( add_query_arg( 'p', absint( $post->ID ), $dashboard_url ) );
+
+	$body  = '<p>The Knowledge Base post "' . get_the_title() . '" has been flagged for old, missing, or inaccurate content.</p>';
+	$body .= '<p>Please review the concern at <a href="' . $flag_dashboard . '">' . $flag_dashboard . '</a>. It can be resolved by clicking the "Resolve" action beneath the comment.</p>';
+	$body .= '<p>View all flags on "' . get_the_title() . '": <a href="' . $post_flags_dash . '">' . $post_flags_dash . '</a>';
+
+	$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+
+	wp_mail( $to, $subject, $body, $headers );
 }
