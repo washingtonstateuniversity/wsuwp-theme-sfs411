@@ -9,6 +9,7 @@ namespace SFS411\Dashboard\Stale_Content;
 
 add_action( 'admin_menu', __NAMESPACE__ . '\add_stale_posts_page' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\stale_posts_submenu_file' );
+add_filter( 'views_edit-knowledge_base', __NAMESPACE__ . '\stale_post_views' );
 add_action( 'add_meta_boxes_knowledge_base', __NAMESPACE__ . '\add_meta_boxes' );
 add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\enqueue_meta_box_assets' );
 add_action( 'save_post_knowledge_base', __NAMESPACE__ . '\save_post', 10, 2 );
@@ -23,7 +24,7 @@ function add_stale_posts_page() {
 		'Stale Posts',
 		'Stale Posts',
 		'edit_posts',
-		'edit.php?post_type=knowledge_base&stale',
+		'edit.php?post_type=knowledge_base&stale&all_posts=1',
 		'',
 		2
 	);
@@ -37,10 +38,75 @@ function add_stale_posts_page() {
  */
 function stale_posts_submenu_file( $submenu_file ) {
 	if ( 'edit-knowledge_base' === get_current_screen()->id && isset( $_GET['stale'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
-		$submenu_file = 'edit.php?post_type=knowledge_base&stale';
+		$submenu_file = 'edit.php?post_type=knowledge_base&stale&all_posts=1';
 	}
 
 	return $submenu_file;
+}
+
+/**
+ * Customizes the views for the Stale Post page.
+ *
+ * @param array $views Fully-formed view links.
+ * @return array Modified array of views.
+ */
+function stale_post_views( $views ) {
+
+	// Return unmodified views early if this isn't the Stale Posts page.
+	if ( ! isset( $_GET['stale'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+		return $views;
+	}
+
+	// The Stale Posts page should only display published posts.
+	unset( $views['publish'] );
+	unset( $views['trash'] );
+
+	// Add the `stale` parameter to all links.
+	foreach ( $views as $view => $link ) {
+		$views[ $view ] = str_replace(
+			'post_type=knowledge_base',
+			'post_type=knowledge_base&stale',
+			$views[ $view ]
+		);
+	}
+
+	// Set up query args for stale posts.
+	$common_args = array(
+		'post_type'      => 'knowledge_base',
+		'posts_per_page' => -1,
+		'meta_query'     => array(
+			array(
+				'key'     => '_sfs411_stale_by',
+				'value'   => date( 'Y-m-d' ),
+				'compare' => '<=',
+				'type'    => 'DATE',
+			),
+		),
+	);
+
+	// Get the number of all stale posts.
+	$all_stale_posts_count = ( new \WP_Query( $common_args ) )->found_posts;
+
+	// Replace the default count with the stale posts count.
+	$views['all'] = preg_replace(
+		'/\(\d+\)/',
+		'(' . $all_stale_posts_count . ')',
+		$views['all']
+	);
+
+	// Add the author argument to get an accurate count for the "Mine" link.
+	$common_args['author']   = get_current_user_id();
+	$users_stale_posts_count = ( new \WP_Query( $common_args ) )->found_posts;
+
+	// Replace the default count with the stale posts by the current user.
+	$views['mine'] = preg_replace(
+		//'/\([^)]+\)/',
+		'/\(\d+\)/',
+		'(' . $users_stale_posts_count . ')',
+		$views['mine']
+	);
+
+	return $views;
 }
 
 /**
