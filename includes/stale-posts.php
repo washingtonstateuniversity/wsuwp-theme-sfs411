@@ -113,7 +113,6 @@ function stale_post_views( $views ) {
 
 	// Replace the default count with the stale posts by the current user.
 	$views['mine'] = preg_replace(
-		//'/\([^)]+\)/',
 		'/\(\d+\)/',
 		'(' . $users_stale_posts_count . ')',
 		$views['mine']
