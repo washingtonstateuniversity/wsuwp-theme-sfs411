@@ -22,7 +22,7 @@ function add_stale_posts_page() {
 		'edit.php?post_type=knowledge_base',
 		'Stale Posts',
 		'Stale Posts',
-		'manage_options',
+		'edit_posts',
 		'edit.php?post_type=knowledge_base&stale',
 		'',
 		2
