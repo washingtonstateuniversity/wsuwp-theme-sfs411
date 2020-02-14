@@ -11,6 +11,7 @@ add_action( 'admin_menu', __NAMESPACE__ . '\add_stale_posts_page' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\stale_posts_submenu_file' );
 add_filter( 'views_edit-knowledge_base', __NAMESPACE__ . '\stale_post_views' );
 add_filter( 'bulk_actions-edit-knowledge_base', __NAMESPACE__ . '\filter_bulk_actions' );
+add_filter( 'post_row_actions', __NAMESPACE__ . '\post_row_actions', 10, 2 );
 add_action( 'add_meta_boxes_knowledge_base', __NAMESPACE__ . '\add_meta_boxes' );
 add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\enqueue_meta_box_assets' );
 add_action( 'save_post_knowledge_base', __NAMESPACE__ . '\save_post', 10, 2 );
@@ -129,6 +130,21 @@ function stale_post_views( $views ) {
  */
 function filter_bulk_actions( $actions ) {
 	if ( is_stale_posts_page() ) {
+		unset( $actions['trash'] );
+	}
+
+	return $actions;
+}
+
+/**
+ * Removes row actions that are not relevant to the Stale Posts dashboard.
+ *
+ * @param array   $actions Array of row action links.
+ * @param WP_Post $post    The post object.
+ */
+function post_row_actions( $actions, $post ) {
+	if ( 'knowledge_base' === $post->post_type && is_stale_posts_page() ) {
+		unset( $actions['inline hide-if-no-js'] );
 		unset( $actions['trash'] );
 	}
 
