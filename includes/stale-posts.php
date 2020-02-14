@@ -340,15 +340,14 @@ function filter_by_stale_posts( $query ) {
 		return;
 	}
 
-	$query->set(
-		'meta_query',
+	$query->set( 'post_status', 'publish' );
+
+	$query->set( 'meta_query', array(
 		array(
-			array(
-				'key'     => '_sfs411_stale_by',
-				'value'   => date( 'Y-m-d' ),
-				'compare' => '<=',
-				'type'    => 'DATE',
-			),
-		)
-	);
+			'key'     => '_sfs411_stale_by',
+			'value'   => date( 'Y-m-d' ),
+			'compare' => '<=',
+			'type'    => 'DATE',
+		),
+	) );
 }
