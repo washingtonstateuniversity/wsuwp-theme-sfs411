@@ -10,6 +10,7 @@ namespace SFS411\Dashboard\Stale_Content;
 add_action( 'admin_menu', __NAMESPACE__ . '\add_stale_posts_page' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\stale_posts_submenu_file' );
 add_filter( 'views_edit-knowledge_base', __NAMESPACE__ . '\stale_post_views' );
+add_filter( 'bulk_actions-edit-knowledge_base', __NAMESPACE__ . '\filter_bulk_actions' );
 add_action( 'add_meta_boxes_knowledge_base', __NAMESPACE__ . '\add_meta_boxes' );
 add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\enqueue_meta_box_assets' );
 add_action( 'save_post_knowledge_base', __NAMESPACE__ . '\save_post', 10, 2 );
@@ -31,13 +32,24 @@ function add_stale_posts_page() {
 }
 
 /**
+ * Determines if the current page is the Stale Posts page.
+ */
+function is_stale_posts_page() {
+	if ( ! isset( $_GET['stale'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+		return false;
+	}
+
+	return true;
+}
+
+/**
  * Filters the file of the Stale Posts menu item.
  *
  * @param string $submenu_file The submenu file.
  * @return string The submenu file.
  */
 function stale_posts_submenu_file( $submenu_file ) {
-	if ( 'edit-knowledge_base' === get_current_screen()->id && isset( $_GET['stale'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+	if ( 'edit-knowledge_base' === get_current_screen()->id && is_stale_posts_page() ) {
 		$submenu_file = 'edit.php?post_type=knowledge_base&stale&all_posts=1';
 	}
 
@@ -53,7 +65,7 @@ function stale_posts_submenu_file( $submenu_file ) {
 function stale_post_views( $views ) {
 
 	// Return unmodified views early if this isn't the Stale Posts page.
-	if ( ! isset( $_GET['stale'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+	if ( ! is_stale_posts_page() ) {
 		return $views;
 	}
 
@@ -107,6 +119,20 @@ function stale_post_views( $views ) {
 	);
 
 	return $views;
+}
+
+/**
+ * Filters the bulk actions available on the Stale Posts page.
+ *
+ * @param array $actions Array of default bulk actions.
+ * @return array Modified array of bulk actions.
+ */
+function filter_bulk_actions( $actions ) {
+	if ( is_stale_posts_page() ) {
+		unset( $actions['trash'] );
+	}
+
+	return $actions;
 }
 
 /**
@@ -294,7 +320,7 @@ function filter_by_stale_posts( $query ) {
 		return;
 	}
 
-	if ( ! isset( $_GET['stale'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+	if ( ! is_stale_posts_page() ) {
 		return;
 	}
 
