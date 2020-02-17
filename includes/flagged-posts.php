@@ -160,6 +160,7 @@ function admin_footer() {
 	}
 	?>
 	<script type="text/javascript">
+		// Add a checkbox for marking a reply as a resolution of the content flag.
 		function addResolveCheckbox() {
 			const checkbox = document.createElement( 'input' );
 			const label = document.createElement( 'label' );
@@ -177,10 +178,20 @@ function admin_footer() {
 			replyContainer.appendChild( label );
 		};
 
+		// Remove the filter actions, except for the "Empty Trash" button.
 		function removeFilterActions() {
 			const filterActions = document.getElementById( 'filter-by-comment-type' ).parentNode;
 
-			filterActions.parentNode.removeChild( filterActions );
+			let child = filterActions.firstElementChild;
+
+			while ( child ) {
+				if ( 'delete_all' === child.id ) {
+					break;
+				}
+
+				filterActions.removeChild( child );
+				child = filterActions.firstElementChild;
+			}
 		}
 
 		addResolveCheckbox();
