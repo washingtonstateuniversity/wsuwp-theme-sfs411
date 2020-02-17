@@ -12,6 +12,7 @@ add_filter( 'parent_file', __NAMESPACE__ . '\flagged_posts_parent_file' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\flagged_posts_submenu_file' );
 add_action( 'adminmenu', __NAMESPACE__ . '\adminmenu' );
 add_filter( 'comment_row_actions', __NAMESPACE__ . '\comment_row_actions', 10, 2 );
+add_action( 'admin_head', __NAMESPACE__ . '\admin_head' );
 add_action( 'admin_footer', __NAMESPACE__ . '\admin_footer' );
 add_filter( 'preprocess_comment', __NAMESPACE__ . '\preprocess_comment_data' );
 add_action( 'pre_get_comments', __NAMESPACE__ . '\filter_comments_query' );
@@ -150,7 +151,26 @@ function comment_row_actions( $actions, $comment ) {
 }
 
 /**
- * Add a checkbox to the comment list table reply form for resolving flags.
+ * Hides the comment filters for the Flagged Posts page.
+ */
+function admin_head() {
+
+	// Return early if this is not the Flagged Posts page.
+	if ( ! is_flagged_posts_page() ) {
+		return;
+	}
+	?>
+	<style type="text/css">
+		#filter-by-comment-type,
+		#post-query-submit {
+			display: none;
+		}
+	</style>
+	<?php
+}
+
+/**
+ * Adds a checkbox to the comment list table reply form for resolving flags.
  */
 function admin_footer() {
 
@@ -424,7 +444,7 @@ function filter_bulk_actions( $actions ) {
 }
 
 /**
- * Disable default comment notifications for comments flagging bad content
+ * Disables default comment notifications for comments flagging bad content
  * or resolving bad content flags.
  *
  * @param bool $maybe_notify Whether to notify blog moderator/post author.
@@ -441,7 +461,7 @@ function disable_default_notification( $maybe_notify, $comment_id ) {
 }
 
 /**
- * Send an email when a comment flagging bad content is submitted.
+ * Sends an email when a comment flagging bad content is submitted.
  *
  * @param int        $comment_id       The comment ID.
  * @param int|string $comment_approved 1 if the comment is approved, 0 if not, 'spam' if spam.
