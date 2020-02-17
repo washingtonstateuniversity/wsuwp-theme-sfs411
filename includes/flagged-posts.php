@@ -459,10 +459,12 @@ function comment_post( $comment_id, $comment_approved, $comment_data ) {
 	$dashboard_url   = add_query_arg( 'comment_type', 'flagged_content', get_admin_url( null, 'edit-comments.php' ) );
 	$flag_dashboard  = esc_url( add_query_arg( 'id', absint( $comment_id ), $dashboard_url ) );
 	$post_flags_dash = esc_url( add_query_arg( 'p', absint( $post->ID ), $dashboard_url ) );
+	$all_posts_flags = esc_url( add_query_arg( 'comment_status', 'my_posts', $dashboard_url ) );
 
 	$body  = '<p>The Knowledge Base post "' . get_the_title() . '" has been flagged for old, missing, or inaccurate content.</p>';
 	$body .= '<p>Please review the concern at <a href="' . $flag_dashboard . '">' . $flag_dashboard . '</a>. It can be resolved by clicking the "Resolve" action beneath the comment.</p>';
-	$body .= '<p>View all flags on "' . get_the_title() . '": <a href="' . $post_flags_dash . '">' . $post_flags_dash . '</a>';
+	$body .= '<p>View all flags on "' . get_the_title() . '" at <a href="' . $post_flags_dash . '">' . $post_flags_dash . '</a>.</p>';
+	$body .= '<p>View flags for all your posts at <a href="' . $all_posts_flags . '">' . $all_posts_flags . '</a>.</p>';
 
 	$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 
