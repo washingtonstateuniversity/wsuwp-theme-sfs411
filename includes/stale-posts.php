@@ -395,7 +395,7 @@ function send_email() {
 				'post_type' => 'knowledge_base',
 				'stale'     => true,
 				'author'    => get_current_user_id(),
-			), get_admin_url( 'edit.php' ) ) );
+			), get_admin_url( null, 'edit.php' ) ) );
 
 			$body  = '<p>The Knowledge Base post "' . get_the_title() . '" has been scheduled for review.</p>';
 			$body .= '<p>Please make any necessary changes at <a href="' . $edit_post . '">' . $edit_post . '</a>, then use the "Reset" button in the "Staleness Management" box to schedule the next time the post should be reviewed.<p>';

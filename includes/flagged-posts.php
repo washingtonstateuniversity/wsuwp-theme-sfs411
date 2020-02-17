@@ -456,7 +456,7 @@ function comment_post( $comment_id, $comment_approved, $comment_data ) {
 
 	$subject = 'Your SFS 411 Knowledge Base post was flagged for content';
 
-	$dashboard_url   = add_query_arg( 'comment_type', 'flagged_content', get_admin_url( 'edit-comments.php' ) );
+	$dashboard_url   = add_query_arg( 'comment_type', 'flagged_content', get_admin_url( null, 'edit-comments.php' ) );
 	$flag_dashboard  = esc_url( add_query_arg( 'id', absint( $comment_id ), $dashboard_url ) );
 	$post_flags_dash = esc_url( add_query_arg( 'p', absint( $post->ID ), $dashboard_url ) );
 
