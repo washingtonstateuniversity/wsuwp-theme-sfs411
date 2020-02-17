@@ -439,7 +439,7 @@ function disable_default_notification( $maybe_notify, $comment_id ) {
 function comment_post( $comment_id, $comment_approved, $comment_data ) {
 
 	// Return early if the comment is not of the `flagged-content` type.
-	if ( 'flagged_content' !== $comment_data->comment_type ) {
+	if ( 'flagged_content' !== $comment_data['comment_type'] ) {
 		return;
 	}
 
@@ -448,7 +448,7 @@ function comment_post( $comment_id, $comment_approved, $comment_data ) {
 		return;
 	}
 
-	$post = get_post( $comment_data->comment_post_ID );
+	$post = get_post( $comment_data['comment_post_ID'] );
 
 	$author_id = $post->post_author;
 
@@ -461,9 +461,9 @@ function comment_post( $comment_id, $comment_approved, $comment_data ) {
 	$post_flags_dash = esc_url( add_query_arg( 'p', absint( $post->ID ), $dashboard_url ) );
 	$all_posts_flags = esc_url( add_query_arg( 'comment_status', 'my_posts', $dashboard_url ) );
 
-	$body  = '<p>The Knowledge Base post "' . get_the_title() . '" has been flagged for old, missing, or inaccurate content.</p>';
+	$body .= '<p>The Knowledge Base post "' . get_the_title( $post ) . '" has been flagged for old, missing, or inaccurate content.</p>';
 	$body .= '<p>Please review the concern at <a href="' . $flag_dashboard . '">' . $flag_dashboard . '</a>. It can be resolved by clicking the "Resolve" action beneath the comment.</p>';
-	$body .= '<p>View all flags on "' . get_the_title() . '" at <a href="' . $post_flags_dash . '">' . $post_flags_dash . '</a>.</p>';
+	$body .= '<p>View all flags on "' . get_the_title( $post ) . '" at <a href="' . $post_flags_dash . '">' . $post_flags_dash . '</a>.</p>';
 	$body .= '<p>View flags for all your posts at <a href="' . $all_posts_flags . '">' . $all_posts_flags . '</a>.</p>';
 
 	$headers = array( 'Content-Type: text/html; charset=UTF-8' );
