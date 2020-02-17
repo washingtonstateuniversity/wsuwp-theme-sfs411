@@ -29,7 +29,7 @@ function register_html5_support() {
  * @return array $comment_fields A modified list of comment fields.
  */
 function filter_comment_form_fields( $comment_fields ) {
-	if ( 'knowledge_base' === get_post_type() ) {
+	if ( 'knowledge_base' === get_post_type() && is_user_logged_in() ) {
 
 		// Add a checkbox for flagging that the comment is about bad content on the post.
 		$flag_checkbox = '<p class="comment-form-flag"><input type="checkbox" id="content-flag" name="content_flag" /><label for="content-flag">This post has old, missing, or incorrect content</label></p>';
