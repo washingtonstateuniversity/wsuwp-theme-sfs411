@@ -5,8 +5,6 @@
  * @package sfs411
  */
 
-$post_share_placement = spine_get_option( 'post_social_placement' );
-
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
