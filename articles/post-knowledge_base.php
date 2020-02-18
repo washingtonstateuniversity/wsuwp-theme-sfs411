@@ -35,12 +35,6 @@ $post_share_placement = spine_get_option( 'post_social_placement' );
 				?>
 			</cite>
 		</hgroup>
-
-		<?php
-		if ( is_singular() && in_array( $post_share_placement, array( 'top', 'both' ), true ) ) {
-			get_template_part( 'parts/share-tools' );
-		}
-		?>
 	</header>
 
 	<?php if ( ! is_singular() ) : ?>
@@ -91,10 +85,6 @@ $post_share_placement = spine_get_option( 'post_social_placement' );
 
 		<?php
 
-		if ( is_singular() && in_array( $post_share_placement, array( 'bottom', 'both' ), true ) ) {
-			get_template_part( 'parts/share-tools' );
-		}
-
 		// Display site level categories attached to the post.
 		if ( has_category() ) {
 			echo '<dl class="categorized">';
@@ -103,23 +93,6 @@ $post_share_placement = spine_get_option( 'post_social_placement' );
 				echo '<dd><a href="' . esc_url( get_category_link( $category->cat_ID ) ) . '">' . esc_html( $category->cat_name ) . '</a></dd>';
 			}
 			echo '</dl>';
-		}
-
-		// Display University categories attached to the post.
-		if ( taxonomy_exists( 'wsuwp_university_category' ) && has_term( '', 'wsuwp_university_category' ) ) {
-			$university_category_terms = get_the_terms( get_the_ID(), 'wsuwp_university_category' );
-			if ( ! is_wp_error( $university_category_terms ) ) {
-				echo '<dl class="university-categorized">';
-				echo '<dt><span class="university-categorized-default">Categorized</span></dt>';
-
-				foreach ( $university_category_terms as $uc_term ) {
-					$term_link = get_term_link( $uc_term->term_id, 'wsuwp_university_category' );
-					if ( ! is_wp_error( $term_link ) ) {
-						echo '<dd><a href="' . esc_url( $term_link ) . '">' . esc_html( $uc_term->name ) . '</a></dd>';
-					}
-				}
-				echo '</dl>';
-			}
 		}
 
 		// Display University tags attached to the post.
@@ -132,55 +105,7 @@ $post_share_placement = spine_get_option( 'post_social_placement' );
 			echo '</dl>';
 		}
 
-		// Display University locations attached to the post.
-		if ( taxonomy_exists( 'wsuwp_university_location' ) && has_term( '', 'wsuwp_university_location' ) ) {
-			$university_location_terms = get_the_terms( get_the_ID(), 'wsuwp_university_location' );
-			if ( ! is_wp_error( $university_location_terms ) ) {
-				echo '<dl class="university-location">';
-				echo '<dt><span class="university-location-default">Location</span></dt>';
-
-				foreach ( $university_location_terms as $ul_term ) {
-					$term_link = get_term_link( $ul_term->term_id, 'wsuwp_university_location' );
-					if ( ! is_wp_error( $term_link ) ) {
-						echo '<dd><a href="' . esc_url( $ul_term_link ) . '">' . esc_html( $ul_term->name ) . '</a></dd>';
-					}
-				}
-				echo '</dl>';
-			}
-		}
-
-		// If a user has filled out their description and this is a multi-author blog, show a bio on their entries.
-		if ( is_singular() && get_the_author_meta( 'description' ) && is_multi_author() ) : ?>
-		<div class="author-info">
-
-			<div class="author-avatar">
-				<?php
-				/** This filter is documented in author.php */
-				$author_bio_avatar_size = apply_filters( 'sfs411_author_bio_avatar_size', 68 );
-				echo get_avatar( get_the_author_meta( 'user_email' ), $author_bio_avatar_size );
-				?>
-			</div><!-- .author-avatar -->
-
-			<div class="author-description">
-				<h2><?php
-				/* translators: %s: author name */
-				printf( esc_html__( 'About %s', 'sfs411' ), get_the_author() );
-				?></h2>
-				<p><?php the_author_meta( 'description' ); ?></p>
-				<?php if ( '1' === spine_get_option( 'show_author_page' ) ) : ?>
-				<div class="author-link">
-					<a href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" rel="author">
-						<?php
-						/* translators: %s: author name */
-						printf( esc_html__( 'View all posts by %s', 'sfs411' ), get_the_author() );
-						?> <span class="meta-nav">&rarr;</span>
-					</a>
-				</div><!-- .author-link	-->
-				<?php endif; ?>
-			</div><!-- .author-description -->
-
-		</div><!-- .author-info -->
-	<?php endif; ?>
+		?>
 
 	</footer><!-- .entry-meta -->
 
