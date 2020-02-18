@@ -27,7 +27,7 @@ function add_flagged_posts_page() {
 		'edit.php?post_type=knowledge_base',
 		'Flagged Posts',
 		'Flagged Posts',
-		'manage_options',
+		'moderate_comments',
 		'edit-comments.php?comment_type=flagged_content',
 		'',
 		1
