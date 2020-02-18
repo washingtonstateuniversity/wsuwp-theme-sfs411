@@ -12,12 +12,16 @@ add_filter( 'parent_file', __NAMESPACE__ . '\flagged_posts_parent_file' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\flagged_posts_submenu_file' );
 add_action( 'adminmenu', __NAMESPACE__ . '\adminmenu' );
 add_filter( 'comment_row_actions', __NAMESPACE__ . '\comment_row_actions', 10, 2 );
+add_action( 'admin_head', __NAMESPACE__ . '\admin_head' );
 add_action( 'admin_footer', __NAMESPACE__ . '\admin_footer' );
 add_filter( 'preprocess_comment', __NAMESPACE__ . '\preprocess_comment_data' );
 add_action( 'pre_get_comments', __NAMESPACE__ . '\filter_comments_query' );
 add_filter( 'wp_count_comments', __NAMESPACE__ . '\filter_comment_counts', 10, 2 );
 add_filter( 'comment_status_links', __NAMESPACE__ . '\flagged_posts_status_links' );
 add_filter( 'bulk_actions-edit-comments', __NAMESPACE__ . '\filter_bulk_actions' );
+add_filter( 'notify_post_author', __NAMESPACE__ . '\disable_default_notification', 10, 2 );
+add_filter( 'notify_moderator', __NAMESPACE__ . '\disable_default_notification', 10, 2 );
+add_action( 'comment_post', __NAMESPACE__ . '\comment_post', 10, 3 );
 
 /**
  * Adds the Flagged Posts page the the Knowledge Base menu.
@@ -36,13 +40,20 @@ function add_flagged_posts_page() {
 
 /**
  * Determines if the current page is the Flagged Posts page.
+ *
+ * @return bool Whther the current page is the Flagged Posts page.
  */
 function is_flagged_posts_page() {
-	if ( ! isset( $_GET['comment_type'] ) || 'flagged_content' !== $_GET['comment_type'] ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
-		return false;
-	}
+	return isset( $_GET['comment_type'] ) && 'flagged_content' === $_GET['comment_type']; // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+}
 
-	return true;
+/**
+ * Determines if the current page is the My Flagged Posts page.
+ *
+ * @return bool Whether the current page is the My Flagged Posts page.
+ */
+function is_my_flagged_posts_page() {
+	return isset( $_GET['comment_status'] ) && 'my_posts' === $_GET['comment_status']; // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
 }
 
 /**
@@ -140,7 +151,26 @@ function comment_row_actions( $actions, $comment ) {
 }
 
 /**
- * Add a checkbox to the comment list table reply form for resolving flags.
+ * Hides the comment filters for the Flagged Posts page.
+ */
+function admin_head() {
+
+	// Return early if this is not the Flagged Posts page.
+	if ( ! is_flagged_posts_page() ) {
+		return;
+	}
+	?>
+	<style type="text/css">
+		#filter-by-comment-type,
+		#post-query-submit {
+			display: none;
+		}
+	</style>
+	<?php
+}
+
+/**
+ * Adds a checkbox to the comment list table reply form for resolving flags.
  */
 function admin_footer() {
 
@@ -150,6 +180,7 @@ function admin_footer() {
 	}
 	?>
 	<script type="text/javascript">
+		// Add a checkbox for marking a reply as a resolution of the content flag.
 		function addResolveCheckbox() {
 			const checkbox = document.createElement( 'input' );
 			const label = document.createElement( 'label' );
@@ -167,10 +198,20 @@ function admin_footer() {
 			replyContainer.appendChild( label );
 		};
 
+		// Remove the filter actions, except for the "Empty Trash" button.
 		function removeFilterActions() {
 			const filterActions = document.getElementById( 'filter-by-comment-type' ).parentNode;
 
-			filterActions.parentNode.removeChild( filterActions );
+			let child = filterActions.firstElementChild;
+
+			while ( child ) {
+				if ( 'delete_all' === child.id ) {
+					break;
+				}
+
+				filterActions.removeChild( child );
+				child = filterActions.firstElementChild;
+			}
 		}
 
 		addResolveCheckbox();
@@ -218,6 +259,19 @@ function filter_comments_query( $query ) {
 
 	if ( is_flagged_posts_page() ) {
 		$query->query_vars['post_type'] = 'knowledge_base';
+
+		// Use the `id` URL parameter to display flags on a specific post.
+		if ( isset( $_GET['id'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+			$query->query_vars['comment__in'] = array( absint( $_GET['id'] ) ); // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+		}
+
+		// Display flags on posts authored by the current user.
+		// Whereas setting other query variables doesn't seem to impact status link counts,
+		// `post_author` evidently does, hence the check that it's not already set to `0`.
+		// Also, attempting to add this by setting it as a URL parameter didn't seem to work.
+		if ( is_my_flagged_posts_page() && ( ! isset( $query->query_vars['post_author'] ) || 0 !== $query->query_vars['post_author'] ) ) {
+			$query->query_vars['post_author'] = get_current_user_id();
+		}
 	} else {
 		$query->query_vars['type__not_in'] = array( 'flagged_content', 'resolved' );
 	}
@@ -232,43 +286,50 @@ function filter_comments_query( $query ) {
  */
 function filter_comment_counts( $count, $post_id ) {
 
-	// Return early if this is not the Flagged Posts page.
-	if ( ! is_flagged_posts_page() ) {
-		return;
-	}
-
 	// Return early if the current view is for a specific post.
 	if ( 0 !== $post_id ) {
 		return $count;
 	}
 
-	$comments_query = new \WP_Comment_Query();
-
-	// Find `flagged_content` comment types on `knowledge_base` posts.
-	$args = array(
-		'type'      => 'flagged_content',
-		'post_type' => 'knowledge_base',
-		'count'     => true,
+	// Find count of comments not of the `flagged_content` or `resolved` type.
+	$base_args = array(
+		'type__not_in' => array( 'flagged_content', 'resolved' ),
+		'count'        => true,
 	);
 
-	// Add the argument for trashed comments.
-	$trashed_comments_args = array_merge(
-		$args,
-		array(
-			'status' => 'trash',
-		),
+	// Overwrite base arguments if this is the flagged posts page.
+	if ( is_flagged_posts_page() ) {
+
+		// Find count of `flagged_content` comment types on `knowledge_base` posts.
+		$base_args = array(
+			'type'        => 'flagged_content',
+			'post_type'   => 'knowledge_base',
+			'count'       => true,
+			'post_author' => 0,
+		);
+	}
+
+	// Provide accurate counts for the "All" and "Trash" links.
+	// (The `moderated`, `approved`, and `spam` links
+	// are removed from the flagged posts page.)
+	$count = array(
+		'all'          => get_comments( $base_args ),
+		'moderated'    => 0,
+		'approved'     => 0,
+		'post-trashed' => get_comments( array_merge( $base_args, array( 'post_status' => 'trash' ) ) ),
+		'spam'         => 0,
+		'trash'        => get_comments( array_merge( $base_args, array( 'status' => 'trash' ) ) ),
 	);
 
-	// Provide accurate counts for `flagged_content` comment types.
-	$count = (object) array(
-		'all'            => get_comments( $args ),
-		'moderated'      => 0,
-		'approved'       => 0,
-		'post-trashed'   => 0,
-		'trash'          => get_comments( $trashed_comments_args ),
-	);
+	// Add accurate `moderated`, `approved`, and `spam`
+	// comment counts for the default Comments page.
+	if ( ! is_flagged_posts_page() ) {
+		$count['moderated']    = get_comments( array_merge( $base_args, array( 'status' => 'hold' ) ) );
+		$count['approved']     = get_comments( array_merge( $base_args, array( 'status' => 'approve' ) ) );
+		$count['spam']         = get_comments( array_merge( $base_args, array( 'status' => 'spam' ) ) );
+	}
 
-	return $count;
+	return (object) $count;
 }
 
 /**
@@ -288,31 +349,76 @@ function flagged_posts_status_links( $status_links ) {
 		return $status_links;
 	}
 
+	// Remove irrelevant status links.
 	unset( $status_links['moderated'] );
 	unset( $status_links['approved'] );
 	unset( $status_links['spam'] );
 
-	$comments_query = new \WP_Comment_Query();
-
-	$args = array(
-		'count'     => true,
-		'user_id'   => get_current_user_id(),
+	// Set up arguments for retrieving the number of `flagged_content`
+	// comments on `knowledge_base` posts for all authors.
+	$default_args = array(
+		'count'       => true,
+		'type'        => 'flagged_content',
+		'post_type'   => 'knowledge_base',
+		'post_author' => 0,
 	);
 
-	$mine_args = array_merge(
-		$args,
-		array(
-			'type'      => 'flagged_content',
-			'post_type' => 'knowledge_base',
-		)
-	);
+	// Supplement the arguments to retrieve the count for the current user.
+	$mine_count = get_comments( array_merge( $default_args, array( 'user_id' => get_current_user_id() ) ) );
 
-	// Replace the inaccurate count for the "Mine" link.
-	$status_links['mine'] = str_replace(
-		get_comments( $args ),
-		get_comments( $mine_args ),
+	// Replace the "Mine" link label with "My Comments",
+	// and the default count with the accurate count.
+	$status_links['mine'] = preg_replace(
+		array( '/Mine/', '/\([^)]+\)/' ),
+		array( 'My flags', '(' . $mine_count . ')' ),
 		$status_links['mine']
 	);
+
+	// Create a URL with parameters for displaying a
+	// list of comments on the current user's posts.
+	$my_posts_link = esc_url( add_query_arg( array(
+		'comment_type'   => 'flagged_content',
+		'comment_status' => 'my_posts',
+	), get_admin_url( null, 'edit-comments.php' ) ) );
+
+	// Start out with a blank string for the current link attributes.
+	$current_link_attributes = '';
+
+	if ( is_my_flagged_posts_page() ) {
+
+		// Overwite the string to output for current link attributes.
+		$current_link_attributes = ' class="current" aria-current="page"';
+
+		// Remove the current link attributes from the "All" link.
+		$status_links['all'] = str_replace(
+			$current_link_attributes,
+			'',
+			$status_links['all']
+		);
+	}
+
+	// Get a count of `flagged_content` comments on the current user's posts.
+	$my_posts_count = get_comments( array_merge( $default_args, array( 'post_author' => get_current_user_id() ) ) );
+
+	// Set up the label for a "Flags on my posts" status link.
+	/* translators: %s: Number of comments. */
+	$label = _nx_noop(
+		'Flags on my posts <span class="count">(%s)</span>',
+		'Flags on my posts <span class="count">(%s)</span>',
+		'comments'
+	);
+
+	// Add the "My Posts" link to the status links array.
+	$status_links['my_posts'] = "<a href='$my_posts_link'$current_link_attributes>" . sprintf(
+		translate_nooped_plural( $label, $my_posts_count ),
+		sprintf(
+			'<span class="my-posts-count">%s</span>',
+			number_format_i18n( $my_posts_count )
+		)
+	) . '</a>';
+
+	// Sort the status links alphabetically.
+	ksort( $status_links );
 
 	return $status_links;
 }
@@ -336,4 +442,63 @@ function filter_bulk_actions( $actions ) {
 	unset( $actions['spam'] );
 
 	return $actions;
+}
+
+/**
+ * Disables default comment notifications for comments flagging bad content
+ * or resolving bad content flags.
+ *
+ * @param bool $maybe_notify Whether to notify blog moderator/post author.
+ * @param int  $comment_id   The ID of the comment for the notification.
+ */
+function disable_default_notification( $maybe_notify, $comment_id ) {
+	$comment_type = get_comment( $comment_id )->comment_type;
+
+	if ( in_array( $comment_type, array( 'flagged_content', 'resolved' ), true ) ) {
+		$maybe_notify = false;
+	}
+
+	return $maybe_notify;
+}
+
+/**
+ * Sends an email when a comment flagging bad content is submitted.
+ *
+ * @param int        $comment_id       The comment ID.
+ * @param int|string $comment_approved 1 if the comment is approved, 0 if not, 'spam' if spam.
+ * @param array      $comment_data     Comment data.
+ */
+function comment_post( $comment_id, $comment_approved, $comment_data ) {
+
+	// Return early if the comment is not of the `flagged-content` type.
+	if ( 'flagged_content' !== $comment_data['comment_type'] ) {
+		return;
+	}
+
+	// Return early if the comment is not approved.
+	if ( 1 !== $comment_approved ) {
+		return;
+	}
+
+	$post = get_post( $comment_data['comment_post_ID'] );
+
+	$author_id = $post->post_author;
+
+	$to = get_the_author_meta( 'user_email', $author_id );
+
+	$subject = 'Your SFS 411 Knowledge Base post was flagged for content';
+
+	$dashboard_url   = add_query_arg( 'comment_type', 'flagged_content', get_admin_url( null, 'edit-comments.php' ) );
+	$flag_dashboard  = esc_url( add_query_arg( 'id', absint( $comment_id ), $dashboard_url ) );
+	$post_flags_dash = esc_url( add_query_arg( 'p', absint( $post->ID ), $dashboard_url ) );
+	$all_posts_flags = esc_url( add_query_arg( 'comment_status', 'my_posts', $dashboard_url ) );
+
+	$body .= '<p>The Knowledge Base post "' . get_the_title( $post ) . '" has been flagged for old, missing, or inaccurate content.</p>';
+	$body .= '<p>Please review the concern at <a href="' . $flag_dashboard . '">' . $flag_dashboard . '</a>. It can be resolved by clicking the "Resolve" action beneath the comment.</p>';
+	$body .= '<p>View all flags on "' . get_the_title( $post ) . '" at <a href="' . $post_flags_dash . '">' . $post_flags_dash . '</a>.</p>';
+	$body .= '<p>View flags for all your posts at <a href="' . $all_posts_flags . '">' . $all_posts_flags . '</a>.</p>';
+
+	$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+
+	wp_mail( $to, $subject, $body, $headers );
 }
