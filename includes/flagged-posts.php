@@ -180,7 +180,8 @@ function admin_footer() {
 }
 
 /**
- * If the comment is about bad content, save it as a `flagged_content` type.
+ * If a comment reply is marked as a resolution for a bad content flag,
+ * update the parent comment type to `resolved`.
  *
  * @param array $commentdata Submitted comment data.
  * @return array $commentdata Modified comment data.
