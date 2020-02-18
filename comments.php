@@ -60,7 +60,6 @@ if ( $comments ) {
 				array(
 					'avatar_size' => 0,
 					'style'       => 'div',
-					'format'      => 'html5',
 					'page'        => get_the_ID(),
 				)
 			);
@@ -84,7 +83,7 @@ if ( $comments ) {
 				}
 				?>
 
-				<nav class="comments-pagination pagination<?php echo $pagination_classes; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static output ?>" aria-label="<?php esc_attr_e( 'Comments', 'sfs411' ); ?>">
+				<nav class="comments-pagination pagination<?php echo esc_attr( $pagination_classes ); ?>" aria-label="<?php esc_attr_e( 'Comments', 'sfs411' ); ?>">
 					<?php echo wp_kses_post( $comment_pagination ); ?>
 				</nav>
 
@@ -101,11 +100,7 @@ if ( $comments ) {
 
 if ( comments_open() ) {
 
-	comment_form(
-		array(
-			'format' => 'html5',
-		)
-	);
+	comment_form();
 
 } elseif ( is_single() ) {
 
