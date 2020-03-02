@@ -7,4 +7,8 @@
  Template:       spine
  Version:        0.0.1
 */
+
+article.type-knowledge_base header time:before {
+	content: none;
+}
 /*# sourceMappingURL=style.css.map */
