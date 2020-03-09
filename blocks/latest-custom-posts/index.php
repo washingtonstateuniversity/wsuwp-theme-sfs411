@@ -9,7 +9,6 @@
 namespace HappyPrime\LatestCustomPosts\Block;
 
 add_action( 'init', __NAMESPACE__ . '\register_block' );
-add_action( 'enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets' );
 add_action( 'rest_api_init', __NAMESPACE__ . '\register_route' );
 add_filter( 'block_editor_settings', __NAMESPACE__ . '\image_size_options', 10, 1 );
 
@@ -282,32 +281,6 @@ function render_block( $attributes ) {
 	$html = ob_get_clean();
 
 	return $html;
-}
-
-/**
- * Enqueue the script used in the editor for this block.
- */
-function enqueue_block_editor_assets() {
-	wp_enqueue_script(
-		'hp-latest-custom-post',
-		plugins_url( 'build/index.js', __DIR__ ),
-		array(
-			'wp-blocks',
-			'wp-i18n',
-			'wp-element',
-		),
-		block_version(),
-		true
-	);
-
-	wp_enqueue_style(
-		'hp-latest-custom-posts',
-		plugins_url( 'css/editor.css', __DIR__ ),
-		array(
-			'wp-edit-blocks',
-		),
-		block_version()
-	);
 }
 
 /**
