@@ -2,10 +2,10 @@
 /**
  * Registers custom blocks.
  *
- * @package sfs411
+ * @package wsuwp-theme-sfs411
  */
 
-namespace SFS411\Blocks;
+namespace WSU\Theme\SFS411\Blocks;
 
 require_once 'latest-custom-posts/index.php'; // Include the latest custom posts block.
 

@@ -3,10 +3,10 @@
  * Handle the server side registration and rendering of the
  * Latest Custom Posts block.
  *
- * @package latest-custom-posts
+ * @package wsuwp-theme-sfs411
  */
 
-namespace HappyPrime\LatestCustomPosts\Block;
+namespace WSU\Theme\SFS411\Blocks\LatestCustomPosts;
 
 add_action( 'init', __NAMESPACE__ . '\register_block' );
 add_action( 'rest_api_init', __NAMESPACE__ . '\register_route' );

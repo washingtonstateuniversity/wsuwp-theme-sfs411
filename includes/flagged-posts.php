@@ -2,10 +2,10 @@
 /**
  * Handling for the Flagged Posts dashboard.
  *
- * @package sfs411
+ * @package wsuwp-theme-sfs411
  */
 
-namespace SFS411\Dashboard\Flagged_Content;
+namespace WSU\Theme\SFS411\Dashboard\Flagged_Content;
 
 add_action( 'admin_menu', __NAMESPACE__ . '\add_flagged_posts_page' );
 add_filter( 'parent_file', __NAMESPACE__ . '\flagged_posts_parent_file' );
