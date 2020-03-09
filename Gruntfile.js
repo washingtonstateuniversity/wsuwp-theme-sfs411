@@ -3,16 +3,19 @@ module.exports = function( grunt ) {
 		pkg: grunt.file.readJSON( "package.json" ),
 
 		stylelint: {
-			src: [ "css/*.css" ]
+			src: [ "css/*.css", "blocks/**/*.css", "!blocks/*.css" ]
 		},
 
 		concat: {
-			options: {
-				sourceMap: true
-			},
-			dist: {
-				src: "css/*.css",
-				dest: "tmp-style.css"
+			theme_and_blocks: {
+				options: {
+					sourceMap: true
+				},
+				files: {
+					"style.css": "css/*.css",
+					"blocks/style.css": [ "blocks/**/style.css", "!blocks/*.css" ],
+					"blocks/editor.css": [ "blocks/**/editor.css", "!blocks/*.css" ]
+				}
 			}
 		},
 
@@ -21,22 +24,12 @@ module.exports = function( grunt ) {
 				map: true,
 				diff: false,
 				processors: [
-					require( "autoprefixer" )( {
-						browsers: [ "> 1%", "ie 8-11", "Firefox ESR" ]
-					} )
+					require( "autoprefixer" )()
 				]
 			},
 			dist: {
-				src: "tmp-style.css",
-				dest: "style.css"
+				src: [ "style.css", "blocks/style.css", "blocks/editor.css" ]
 			}
-		},
-
-		clean: {
-			options: {
-				force: true
-			},
-			temp: [ "tmp-style.css", "tmp-style.css.map" ]
 		},
 
 		jscs: {
@@ -95,7 +88,7 @@ module.exports = function( grunt ) {
 
 		watch: {
 			styles: {
-				files: [ "css/*.css", "js/*.js" ],
+				files: [ "css/*.css", "blocks/**/*.css", "js/*.js", "blocks/**/*.js" ],
 				tasks: [ "default" ],
 				option: {
 					livereload: 8000
@@ -111,6 +104,12 @@ module.exports = function( grunt ) {
 					hostname: "localhost"
 				}
 			}
+		},
+
+		run: {
+			npm_build_custom: {
+				exec: "npm run build:custom --silent"
+			}
 		}
 
 	} );
@@ -118,15 +117,15 @@ module.exports = function( grunt ) {
 	grunt.loadNpmTasks( "grunt-postcss" );
 	grunt.loadNpmTasks( "grunt-contrib-concat" );
 	grunt.loadNpmTasks( "grunt-contrib-connect" );
-	grunt.loadNpmTasks( "grunt-contrib-clean" );
 	grunt.loadNpmTasks( "grunt-contrib-watch" );
 	grunt.loadNpmTasks( "grunt-phpcs" );
 	grunt.loadNpmTasks( "grunt-stylelint" );
 	grunt.loadNpmTasks( "grunt-jscs" );
 	grunt.loadNpmTasks( "grunt-contrib-jshint" );
+	grunt.loadNpmTasks( "grunt-run" );
 
 	// Default task(s).
-	grunt.registerTask( "default", [ "jscs", "jshint", "stylelint", "concat", "postcss", "clean" ] );
+	grunt.registerTask( "default", [ "jscs", "jshint", "run:npm_build_custom", "stylelint", "concat", "postcss" ] );
 
 	grunt.registerTask( "serve", [ "connect", "watch" ] );
 };
