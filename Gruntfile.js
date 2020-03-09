@@ -13,7 +13,6 @@ module.exports = function( grunt ) {
 				},
 				files: {
 					"style.css": "css/*.css",
-					"blocks/style.css": [ "blocks/**/style.css", "!blocks/*.css" ],
 					"blocks/editor.css": [ "blocks/**/editor.css", "!blocks/*.css" ]
 				}
 			}
@@ -28,7 +27,7 @@ module.exports = function( grunt ) {
 				]
 			},
 			dist: {
-				src: [ "style.css", "blocks/style.css", "blocks/editor.css" ]
+				src: [ "style.css", "blocks/editor.css" ]
 			}
 		},
 
