@@ -8,6 +8,7 @@
   "devDependencies": {
     "@wordpress/scripts": "^7.1.2",
     "autoprefixer": "^9.7.4",
+    "classnames": "^2.2.6",
     "grunt": "^1.0.4",
     "grunt-contrib-concat": "~1.0.1",
     "grunt-contrib-connect": "^2.1.0",
