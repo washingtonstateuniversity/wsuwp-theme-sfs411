@@ -11,15 +11,24 @@
 
 	<header class="article-header">
 		<hgroup>
-		<?php if ( is_single() ) : ?>
-			<?php if ( true === spine_get_option( 'articletitle_show' ) ) : ?>
+		<?php
+		if ( is_single() ) :
+
+			get_template_part( 'parts/share-tools' );
+
+			if ( true === spine_get_option( 'articletitle_show' ) ) :
+				?>
 				<h1 class="article-title"><?php the_title(); ?></h1>
-			<?php endif; ?>
-		<?php else : ?>
+				<?php
+			endif;
+		else :
+			?>
 			<h2 class="article-title">
 				<a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a>
 			</h2>
-		<?php endif; ?>
+			<?php
+		endif;
+		?>
 		</hgroup>
 		<hgroup class="source">
 			Last updated <time class="article-date" datetime="<?php echo esc_attr( get_the_modified_date( 'c' ) ); ?>"><?php echo esc_html( get_the_modified_date() ); ?></time>
