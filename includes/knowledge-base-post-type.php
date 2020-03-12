@@ -8,6 +8,8 @@
 namespace SFS411\Post_Type\Knowledge_Base;
 
 add_action( 'init', __NAMESPACE__ . '\register_post_type' );
+add_action( 'init', __NAMESPACE__ . '\add_university_taxonomies', 11 );
+add_filter( 'wsuwp_taxonomy_metabox_post_types', __NAMESPACE__ . '\taxonomy_meta_box' );
 
 /**
  * Register the Knowledge Base post type.
@@ -55,4 +57,22 @@ function register_post_type() {
 	);
 
 	\register_post_type( 'knowledge_base', $args );
+}
+
+/**
+ * Add support for the University Location taxonomy.
+ */
+function add_university_taxonomies() {
+	register_taxonomy_for_object_type( 'wsuwp_university_location', 'knowledge_base' );
+}
+
+/**
+ * Displays a meta box with the Select2 interface provided by the University Taxonomy plugin.
+ *
+ * @param array $post_types Post types and their associated taxonomies.
+ */
+function taxonomy_meta_box( $post_types ) {
+	$post_types['knowledge_base'] = array( 'wsuwp_university_location' );
+
+	return $post_types;
 }
