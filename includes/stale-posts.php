@@ -2,10 +2,10 @@
 /**
  * Handling for the Stale Posts dashboard.
  *
- * @package sfs411
+ * @package wsuwp-theme-sfs411
  */
 
-namespace SFS411\Dashboard\Stale_Content;
+namespace WSU\Theme\SFS411\Dashboard\Stale_Content;
 
 add_action( 'admin_menu', __NAMESPACE__ . '\add_stale_posts_page' );
 add_filter( 'submenu_file', __NAMESPACE__ . '\stale_posts_submenu_file' );

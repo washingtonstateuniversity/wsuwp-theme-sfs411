@@ -2,10 +2,10 @@
 /**
  * Handling for customizations to the comment form.
  *
- * @package sfs411
+ * @package wsuwp-theme-sfs411
  */
 
-namespace SFS411\Comment\Form;
+namespace WSU\Theme\SFS411\Comment\Form;
 
 add_action( 'after_setup_theme', __NAMESPACE__ . '\register_html5_support' );
 add_filter( 'comment_form_fields', __NAMESPACE__ . '\filter_comment_form_fields', 10 );

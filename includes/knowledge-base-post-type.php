@@ -2,10 +2,10 @@
 /**
  * Handling for the Knowledge Base post type.
  *
- * @package sfs411
+ * @package wsuwp-theme-sfs411
  */
 
-namespace SFS411\Post_Type\Knowledge_Base;
+namespace WSU\Theme\SFS411\Post_Type\Knowledge_Base;
 
 add_action( 'init', __NAMESPACE__ . '\register_post_type' );
 add_action( 'init', __NAMESPACE__ . '\add_university_taxonomies', 11 );
