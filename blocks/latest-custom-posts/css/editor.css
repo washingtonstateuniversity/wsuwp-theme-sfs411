@@ -20,7 +20,7 @@
 }
 
 .happyprime-block-latest-custom-posts_taxonomy-setting-wrapper:not(:only-child) .happyprime-block-latest-custom-posts_taxonomy-setting {
-	padding: 0 16px 12px 32px;
+	padding: 0px 16px 12px 32px;
 }
 
 .happyprime-block-latest-custom-posts_taxonomy-setting-wrapper:not(:first-of-type) .happyprime-block-latest-custom-posts_taxonomy-setting {
@@ -38,4 +38,3 @@
 .happyprime-block-latest-custom-posts_error .components-spinner {
 	float: none;
 }
-/*# sourceMappingURL=editor.css.map */
