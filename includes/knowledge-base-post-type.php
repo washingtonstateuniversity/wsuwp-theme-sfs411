@@ -35,7 +35,7 @@ function filter_archive_query( $query ) {
  * base archive views.
  */
 function rewrite_rules() {
-	add_rewrite_rule( 'knowledge-base/category/([^/]+)/?$', 'index.php?post_type=knowledge_base&category_name=$matches[1]', 'top' );
+	add_rewrite_rule( 'knowledge-base/category/(.+?)/?$', 'index.php?post_type=knowledge_base&category_name=$matches[1]', 'top' );
 }
 
 /**
