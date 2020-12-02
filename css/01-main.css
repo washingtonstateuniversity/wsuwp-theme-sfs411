@@ -1,0 +1,24 @@
+.social-share-bar {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0;
+	position: relative;
+}
+
+.social-share-bar a,
+.social-share-bar a:hover {
+	background: none;
+	border-bottom: none;
+	text-decoration: none;
+}
+
+@media only screen and (max-width: 530px) {
+
+	.social-share-bar {
+		margin-top: 1em;
+	}
+}
+
+article.type-knowledge_base header time:before {
+	content: none;
+}
