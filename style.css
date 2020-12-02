@@ -8,6 +8,24 @@
  Version:        0.1.0
 */
 
+/* --- Layout adjustments --- */
+.hentry {
+	margin-left: 2rem;
+	margin-right: 2rem;
+}
+
+/* --- Latest Custom Posts --- */
+.wp-block-latest-posts {
+	border: 1px solid rgba(0, 0, 0, .1);
+	margin: 1rem 0;
+	padding: 1rem;
+}
+
+.wp-block-latest-posts a {
+	font-weight: 700;
+}
+
+/* --- Share bar overrides --- */
 .social-share-bar {
 	display: -ms-flexbox;
 	display: flex;
@@ -17,15 +35,15 @@
 	position: relative;
 }
 
-.social-share-bar a,
-.social-share-bar a:hover {
+.column .social-share-bar ul li:before {
+	display: none;
+}
+
+.social-share-bar ul li a,
+.social-share-bar ul li a:hover {
 	background: none;
 	border-bottom: none;
 	text-decoration: none;
-}
-
-.hidden-kb-item {
-	display: none;
 }
 
 @media only screen and (max-width: 530px) {
@@ -35,7 +53,21 @@
 	}
 }
 
+/* --- Knowledge Base --- */
+.hidden-kb-item {
+	display: none;
+}
+
+#kb-filter-archive {
+	border-bottom-width: 3px;
+	margin: 2rem 0;
+}
+
 article.type-knowledge_base header time:before {
 	content: none;
+}
+
+.post-type-archive-knowledge_base .hentry {
+	margin: 0;
 }
 /*# sourceMappingURL=style.css.map */
