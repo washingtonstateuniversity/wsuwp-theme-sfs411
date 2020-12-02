@@ -7,9 +7,26 @@
 
 namespace WSU\Theme\SFS411\Post_Type\Knowledge_Base;
 
+add_action( 'pre_get_posts', __NAMESPACE__ . '\filter_archive_query' );
 add_action( 'init', __NAMESPACE__ . '\register_post_type' );
 add_action( 'init', __NAMESPACE__ . '\add_university_taxonomies', 11 );
 add_filter( 'wsuwp_taxonomy_metabox_post_types', __NAMESPACE__ . '\taxonomy_meta_box' );
+
+/**
+ * Filter the query used to power knowledge base archive views.
+ *
+ * - On the post type archive page, sort by title ascending and
+ *   display up to 500 items.
+ *
+ * @param \WP_Query $query
+ */
+function filter_archive_query( $query ) {
+	if ( ! is_admin() && $query->is_main_query() && $query->is_post_type_archive( 'knowledge_base' ) ) {
+		$query->set( 'posts_per_page', 500 );
+		$query->set( 'orderby', 'title' );
+		$query->set( 'order', 'ASC' );
+	}
+}
 
 /**
  * Register the Knowledge Base post type.
