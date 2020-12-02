@@ -46,6 +46,11 @@
 	display: none;
 }
 
+.kb-item a:hover {
+	color: #a60f2d;
+	text-decoration: underline;
+}
+
 #kb-filter-archive {
 	border-bottom-width: 3px;
 	margin: 2rem 0;
