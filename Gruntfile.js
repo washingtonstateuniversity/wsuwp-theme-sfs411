@@ -124,7 +124,7 @@ module.exports = function( grunt ) {
 	grunt.loadNpmTasks( "grunt-run" );
 
 	// Default task(s).
-	grunt.registerTask( "default", [ "jscs", "jshint", "run:npm_build_custom", "stylelint", "concat", "postcss" ] );
+	grunt.registerTask( "default", [ "jscs", "jshint", "stylelint", "concat", "postcss" ] );
 
 	grunt.registerTask( "serve", [ "connect", "watch" ] );
 };
