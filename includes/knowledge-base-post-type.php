@@ -32,11 +32,12 @@ function filter_archive_query( $query ) {
 }
 
 /**
- * Filter rewrite rules to account for category specific knowledge
- * base archive views.
+ * Filter rewrite rules to account for category and tag specific
+ * knowledge base archive views.
  */
 function rewrite_rules() {
 	add_rewrite_rule( 'knowledge-base/category/(.+?)/?$', 'index.php?post_type=knowledge_base&category_name=$matches[1]', 'top' );
+	add_rewrite_rule( 'knowledge-base/tag/(.+?)/?$', 'index.php?post_type=knowledge_base&tag=$matches[1]', 'top' );
 }
 
 /**
