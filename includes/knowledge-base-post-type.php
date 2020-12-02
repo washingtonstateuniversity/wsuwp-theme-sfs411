@@ -8,6 +8,7 @@
 namespace WSU\Theme\SFS411\Post_Type\Knowledge_Base;
 
 add_action( 'pre_get_posts', __NAMESPACE__ . '\filter_archive_query' );
+add_action( 'init', __NAMESPACE__ . '\rewrite_rules' );
 add_action( 'init', __NAMESPACE__ . '\register_post_type' );
 add_action( 'init', __NAMESPACE__ . '\add_university_taxonomies', 11 );
 add_filter( 'wsuwp_taxonomy_metabox_post_types', __NAMESPACE__ . '\taxonomy_meta_box' );
@@ -26,6 +27,14 @@ function filter_archive_query( $query ) {
 		$query->set( 'orderby', 'title' );
 		$query->set( 'order', 'ASC' );
 	}
+}
+
+/**
+ * Filter rewrite rules to account for category specific knowledge
+ * base archive views.
+ */
+function rewrite_rules() {
+	add_rewrite_rule( 'knowledge-base/category/([^/]+)/?$', 'index.php?post_type=knowledge_base&category_name=$matches[1]', 'top' );
 }
 
 /**
