@@ -18,6 +18,7 @@ add_filter( 'wsuwp_taxonomy_metabox_post_types', __NAMESPACE__ . '\taxonomy_meta
  *
  * - On the post type archive page, sort by title ascending and
  *   display up to 500 items.
+ * - The same applies to knowledge-base/category/{category-name}
  *
  * @param \WP_Query $query
  */
