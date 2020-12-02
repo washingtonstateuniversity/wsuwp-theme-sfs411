@@ -2,7 +2,19 @@
 
 	<div class="column one">
 
-		<?php while ( have_posts() ) : the_post(); ?>
+		<?php
+
+		if ( is_category() ) {
+			?>
+			<h1>Knowledge base: <?php single_cat_title( '', true ); ?></h1>
+			<?php
+		} else {
+			?>
+			<h1>Knowlege base</h1>
+			<?php
+		}
+
+		while ( have_posts() ) : the_post(); ?>
 
 		<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 			<header class="article-header">
