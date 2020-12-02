@@ -24,6 +24,10 @@
 	text-decoration: none;
 }
 
+.hidden-kb-item {
+	display: none;
+}
+
 @media only screen and (max-width: 530px) {
 
 	.social-share-bar {

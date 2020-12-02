@@ -9,6 +9,7 @@ namespace WSU\Theme\SFS411\Post_Type\Knowledge_Base;
 
 add_action( 'pre_get_posts', __NAMESPACE__ . '\filter_archive_query' );
 add_action( 'init', __NAMESPACE__ . '\rewrite_rules' );
+add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\enqueue_scripts' );
 add_action( 'init', __NAMESPACE__ . '\register_post_type' );
 add_action( 'init', __NAMESPACE__ . '\add_university_taxonomies', 11 );
 add_filter( 'wsuwp_taxonomy_metabox_post_types', __NAMESPACE__ . '\taxonomy_meta_box' );
@@ -36,6 +37,22 @@ function filter_archive_query( $query ) {
  */
 function rewrite_rules() {
 	add_rewrite_rule( 'knowledge-base/category/(.+?)/?$', 'index.php?post_type=knowledge_base&category_name=$matches[1]', 'top' );
+}
+
+/**
+ * Enqueue the script used to filter knowledge base items on
+ * archive views.
+ */
+function enqueue_scripts() {
+	if ( is_post_type_archive( 'knowledge_base' ) ) {
+		wp_enqueue_script(
+			'sfs411-kb-filter',
+			get_stylesheet_directory_uri() . '/includes/js/knowledge-base-filter.js',
+			array(),
+			spine_get_child_version(),
+			true
+		);
+	}
 }
 
 /**

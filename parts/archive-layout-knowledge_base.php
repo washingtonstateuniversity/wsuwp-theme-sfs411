@@ -14,9 +14,13 @@
 			<?php
 		}
 
+		?>
+		<input id="kb-filter-archive" type="text" placeholder="Type to filter" />
+		<?php
+
 		while ( have_posts() ) : the_post(); ?>
 
-		<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+		<article id="post-<?php the_ID(); ?>" <?php post_class( 'kb-item' ); ?> data-title="<?php echo esc_attr( strtolower( get_the_title() ) ); ?>">
 			<header class="article-header">
 				<hgroup>
 					<h2 class="article-title">
