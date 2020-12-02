@@ -28,7 +28,7 @@
 					</h2>
 				</hgroup>
 				<hgroup class="source">
-					Last updated <time class="article-date" datetime="<?php echo get_the_modified_date( 'c' ); ?>"><?php echo get_the_modified_date(); ?></time>
+					Last updated <time class="article-date" datetime="<?php echo esc_attr( get_the_modified_date( 'c' ) ); ?>"><?php echo esc_html( get_the_modified_date() ); ?></time>
 				</hgroup>
 			</header>
 		</article>
