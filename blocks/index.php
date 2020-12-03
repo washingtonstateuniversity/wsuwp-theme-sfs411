@@ -7,30 +7,17 @@
 
 namespace WSU\Theme\SFS411\Blocks;
 
-require_once 'latest-custom-posts/index.php'; // Include the latest custom posts block.
-
-add_action( 'enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets', 10 );
-
 /**
- * Enqueues assets for the editor.
+ * - wp dist-archive was used to create a distributable archive of
+ *   the Latest Custom Posts plugin so that it could be embedded in
+ *   this theme. This removes most unnecessary build and development
+ *   files.
+ * - The script enqueues in the Latest Custom Posts block file are
+ *   modified to load from the child theme location rather than the
+ *   standard plugins_url().
+ * - The namespace in the main Block file is updated to match this
+ *   theme in the case that the plugin is added to the wider ecosystem.
+ * - The main Latest Custom Posts plugin file is removed and the
+ *   block is included directly.
  */
-function enqueue_block_editor_assets() {
-	wp_enqueue_script(
-		'sfs411-blocks',
-		get_stylesheet_directory_uri() . '/blocks/index.js',
-		array(
-			'wp-blocks',
-			'wp-i18n',
-			'wp-element',
-		),
-		sfs411_theme_version(),
-		true
-	);
-
-	wp_enqueue_style(
-		'sfs411-blocks-editor',
-		get_stylesheet_directory_uri() . '/blocks/editor.css',
-		array(),
-		sfs411_theme_version()
-	);
-}
+require_once __DIR__ . '/latest-custom-posts/includes/block.php'; // Include the latest custom posts block.

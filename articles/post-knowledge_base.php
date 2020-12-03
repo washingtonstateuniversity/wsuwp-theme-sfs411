@@ -97,7 +97,10 @@
 			echo '<dl class="categorized">';
 			echo '<dt><span class="categorized-default">Categorized</span></dt>';
 			foreach ( get_the_category() as $category ) {
-				echo '<dd><a href="' . esc_url( get_category_link( $category->cat_ID ) ) . '">' . esc_html( $category->cat_name ) . '</a></dd>';
+				$category_permalink = get_category_link( $category->term_id );
+				$category_permalink = str_replace( '/category/', '/knowledge-base/category/', $category_permalink );
+
+				echo '<dd><a href="' . esc_url( $category_permalink ) . '">' . esc_html( $category->name ) . '</a></dd>';
 			}
 			echo '</dl>';
 		}
@@ -107,7 +110,10 @@
 			echo '<dl class="tagged">';
 			echo '<dt><span class="tagged-default">Tagged</span></dt>';
 			foreach ( get_the_tags() as $post_tag ) {
-				echo '<dd><a href="' . esc_url( get_tag_link( $post_tag->term_id ) ) . '">' . esc_html( $post_tag->name ) . '</a></dd>';
+				$tag_permalink = get_tag_link( $post_tag->term_id );
+				$tag_permalink = str_replace( '/tag/', '/knowledge-base/tag/', $tag_permalink );
+
+				echo '<dd><a href="' . esc_url( $tag_permalink ) . '">' . esc_html( $post_tag->name ) . '</a></dd>';
 			}
 			echo '</dl>';
 		}

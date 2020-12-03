@@ -17,7 +17,7 @@ add_filter( 'spine_child_theme_version', 'sfs411_theme_version' );
  * @return string
  */
 function sfs411_theme_version() {
-	return '0.0.1';
+	return '0.1.0';
 }
 
 require_once 'includes/knowledge-base-post-type.php';

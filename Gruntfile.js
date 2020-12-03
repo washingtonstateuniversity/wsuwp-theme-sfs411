@@ -3,7 +3,7 @@ module.exports = function( grunt ) {
 		pkg: grunt.file.readJSON( "package.json" ),
 
 		stylelint: {
-			src: [ "css/*.css", "blocks/**/*.css", "!blocks/*.css" ]
+			src: [ "css/*.css" ]
 		},
 
 		concat: {
@@ -12,8 +12,7 @@ module.exports = function( grunt ) {
 					sourceMap: true
 				},
 				files: {
-					"style.css": "css/*.css",
-					"blocks/editor.css": [ "blocks/**/editor.css", "!blocks/*.css" ]
+					"style.css": "css/*.css"
 				}
 			}
 		},
@@ -27,7 +26,7 @@ module.exports = function( grunt ) {
 				]
 			},
 			dist: {
-				src: [ "style.css", "blocks/editor.css" ]
+				src: [ "style.css" ]
 			}
 		},
 
@@ -87,7 +86,7 @@ module.exports = function( grunt ) {
 
 		watch: {
 			styles: {
-				files: [ "css/*.css", "blocks/**/*.css", "js/*.js", "blocks/**/*.js" ],
+				files: [ "css/*.css", "js/*.js" ],
 				tasks: [ "default" ],
 				option: {
 					livereload: 8000
@@ -102,12 +101,6 @@ module.exports = function( grunt ) {
 					port: 8000,
 					hostname: "localhost"
 				}
-			}
-		},
-
-		run: {
-			npm_build_custom: {
-				exec: "npm run build:custom --silent"
 			}
 		}
 
@@ -124,7 +117,7 @@ module.exports = function( grunt ) {
 	grunt.loadNpmTasks( "grunt-run" );
 
 	// Default task(s).
-	grunt.registerTask( "default", [ "jscs", "jshint", "run:npm_build_custom", "stylelint", "concat", "postcss" ] );
+	grunt.registerTask( "default", [ "jscs", "jshint", "stylelint", "concat", "postcss" ] );
 
 	grunt.registerTask( "serve", [ "connect", "watch" ] );
 };
