@@ -10,7 +10,7 @@
 			<?php
 		} else {
 			?>
-			<h1>Knowlege base</h1>
+			<h1>Knowledge base</h1>
 			<?php
 		}
 
