@@ -12,6 +12,7 @@ add_action( 'init', __NAMESPACE__ . '\rewrite_rules' );
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\enqueue_scripts' );
 add_action( 'init', __NAMESPACE__ . '\register_post_type' );
 add_action( 'init', __NAMESPACE__ . '\add_university_taxonomies', 11 );
+add_action( 'init', __NAMESPACE__ . '\add_content_visibility_support', 11 );
 add_filter( 'wsuwp_taxonomy_metabox_post_types', __NAMESPACE__ . '\taxonomy_meta_box' );
 
 /**
@@ -29,6 +30,11 @@ function filter_archive_query( $query ) {
 		$query->set( 'orderby', 'title' );
 		$query->set( 'order', 'ASC' );
 	}
+}
+
+
+function add_content_visibility_support() {
+	add_post_type_support( 'knowledge_base', 'wsuwp-content-visibility' );	
 }
 
 /**
