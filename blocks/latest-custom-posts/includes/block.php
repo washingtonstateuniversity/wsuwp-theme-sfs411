@@ -120,7 +120,7 @@ function build_query_args( $attributes ) {
 		'posts_per_page' => $posts_per_page,
 		'order'          => $attributes['order'],
 		'orderby'        => $attributes['orderBy'],
-		'post_status'    => 'publish',
+		'post_status'    => array( 'publish', 'private' ),
 		'fields'         => 'ids',
 	);
 
