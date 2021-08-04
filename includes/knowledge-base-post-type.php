@@ -29,6 +29,7 @@ function filter_archive_query( $query ) {
 		$query->set( 'posts_per_page', 500 );
 		$query->set( 'orderby', 'title' );
 		$query->set( 'order', 'ASC' );
+		$query->set( 'post_status', array('publish','private') );
 	}
 }
 
