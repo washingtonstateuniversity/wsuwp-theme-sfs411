@@ -72,7 +72,8 @@ function stale_post_views( $views ) {
 		return $views;
 	}
 
-	// The Stale Posts page should only display published posts.
+	// The Stale Posts page should only display private and published posts.
+	unset( $views['private'] );
 	unset( $views['publish'] );
 	unset( $views['trash'] );
 
@@ -89,6 +90,7 @@ function stale_post_views( $views ) {
 	$common_args = array(
 		'post_type'      => 'knowledge_base',
 		'posts_per_page' => -1,
+		'post_status'    => array( 'private', 'publish' ),
 		'meta_query'     => array(
 			array(
 				'key'     => '_sfs411_stale_by',
@@ -341,7 +343,7 @@ function filter_by_stale_posts( $query ) {
 		return;
 	}
 
-	$query->set( 'post_status', 'publish' );
+	$query->set( 'post_status', array( 'private', 'publish' ) );
 
 	$query->set( 'meta_query', array(
 		array(
@@ -373,7 +375,8 @@ function send_email() {
 	$stale_post_query = new \WP_Query( array(
 		'post_type'      => 'knowledge_base',
 		'posts_per_page' => -1,
-		'meta_query' => array(
+		'post_status'    => array( 'private', 'publish' ),
+		'meta_query'     => array(
 			array(
 				'key'     => '_sfs411_stale_by',
 				'value'   => date( 'Y-m-d' ),
